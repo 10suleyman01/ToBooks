@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">ToBooks</string>
+    <string name="login">Логин</string>
+    <string name="password">Пароль</string>
+    <string name="sign_in">Войти</string>
+    <string name="sign_out">Выйти</string>
+    <string name="sign_in_successful">Добро пожаловать!</string>
+    <string name="sign_in_error">Ошибка входа</string>
+    <string name="sign_up">Регистрация</string>
+    <string name="sign_up_successful">Регистрация прошла успешна</string>
+    <string name="sign_up_error">Ошибка регистрации</string>
+    <string name="upload">Загрузить</string>
+    <string name="search">Поиск</string>
+    <string name="upload_btn_text">Готово</string>
+    <string name="select_category">Выбрать категорию</string>
+    <string name="author_name">Имя автора</string>
+    <string name="create_subcategory">Создать подкатегорию</string>
+    <string name="book_name">Имя книги</string>
+    <string name="set_upload_file">Выберите книгу</string>
+    <string name="download">Скачать</string>
+    <string name="select">Выбрать</string>
+</resources>
