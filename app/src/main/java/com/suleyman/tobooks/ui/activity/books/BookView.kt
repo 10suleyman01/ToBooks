@@ -1,4 +1,7 @@
 package com.suleyman.tobooks.ui.activity.books
 
-interface BookView {
+import com.arellomobile.mvp.MvpView
+
+interface BookView: MvpView {
+    fun loadRootDirectories()
 }

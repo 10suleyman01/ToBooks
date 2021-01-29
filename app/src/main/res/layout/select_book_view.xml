@@ -19,7 +19,7 @@
         app:layout_constraintEnd_toStartOf="@+id/btnSelectBook"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:text="@string/set_upload_file" />
+        android:hint="@string/set_upload_file" />
 
     <Button
         android:id="@+id/btnSelectBook"

@@ -1,6 +1,7 @@
 package com.suleyman.tobooks.ui.activity.books
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,9 +11,10 @@ import androidx.recyclerview.widget.RecyclerView
 import butterknife.BindView
 import butterknife.ButterKnife
 import com.suleyman.tobooks.R
+import com.suleyman.tobooks.app.Common
 import com.suleyman.tobooks.model.BookModel
 
-class BooksAdapter(): RecyclerView.Adapter<BooksAdapter.BookHolder>() {
+class BooksAdapter(val context: Context) : RecyclerView.Adapter<BooksAdapter.BookHolder>() {
 
     private var bookList = mutableListOf<BookModel>()
     private var listeners = mutableListOf<OnClickListener>()
@@ -32,7 +34,9 @@ class BooksAdapter(): RecyclerView.Adapter<BooksAdapter.BookHolder>() {
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BookHolder {
-        return BookHolder(LayoutInflater.from(parent.context).inflate(R.layout.book_item, parent, false))
+        return BookHolder(
+            LayoutInflater.from(parent.context).inflate(R.layout.book_item, parent, false)
+        )
     }
 
     override fun onBindViewHolder(holder: BookHolder, position: Int) {
@@ -42,7 +46,7 @@ class BooksAdapter(): RecyclerView.Adapter<BooksAdapter.BookHolder>() {
     override fun getItemCount(): Int = bookList.size
 
     @SuppressLint("NonConstantResourceId")
-    inner class BookHolder(private val itemView: View): RecyclerView.ViewHolder(itemView) {
+    inner class BookHolder(private val itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         init {
             ButterKnife.bind(this, itemView)
@@ -62,9 +66,13 @@ class BooksAdapter(): RecyclerView.Adapter<BooksAdapter.BookHolder>() {
 
             if (book.type == BookModel.Type.BOOK) {
                 btnBookDownload.setImageResource(R.drawable.baseline_get_app_24)
+                btnBookDownload.setOnClickListener {
+                    Common.downloadBook(this@BooksAdapter.context, book)
+                }
                 bookImageView.setImageResource(R.drawable.baseline_insert_drive_file_24)
+                bookImageView.visibility = View.VISIBLE
             } else {
-                bookImageView.setImageResource(R.drawable.baseline_folder_24)
+                bookImageView.visibility = View.GONE
                 btnBookDownload.setImageResource(R.drawable.baseline_chevron_right_24)
             }
 

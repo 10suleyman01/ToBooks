@@ -2,8 +2,8 @@ package com.suleyman.tobooks.ui.activity.books
 
 import abhishekti7.unicorn.filepicker.UnicornFilePicker
 import abhishekti7.unicorn.filepicker.utils.Constants
+import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Dialog
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -18,24 +18,30 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
+import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import butterknife.BindView
 import butterknife.ButterKnife
+import com.arellomobile.mvp.presenter.InjectPresenter
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.ListResult
 import com.google.firebase.storage.StorageReference
 import com.suleyman.tobooks.R
+import com.suleyman.tobooks.app.Common
 import com.suleyman.tobooks.app.ToBooksApp
+import com.suleyman.tobooks.base.BaseActivity
 import com.suleyman.tobooks.model.BookModel
 import java.io.File
+import java.io.InputStream
 
 @SuppressLint("NonConstantResourceId")
-class BooksActivity : AppCompatActivity() {
+class BooksActivity : BaseActivity(), BookView, View.OnClickListener {
 
     private val TAG = "BooksActivity"
+    private val REQUEST_CHECK_PERMISSIONS = 1263
 
     @BindView(R.id.rvBooksView)
     lateinit var rvBooksView: RecyclerView
@@ -43,11 +49,11 @@ class BooksActivity : AppCompatActivity() {
     @BindView(R.id.progressBarBooks)
     lateinit var progressBarBooks: ProgressBar
 
+    @BindView(R.id.progressBarUploadTask)
+    lateinit var progressBarUploadTask: ProgressBar
+
     @BindView(R.id.fabAddNewFile)
     lateinit var fabAddNewFile: FloatingActionButton
-
-    @BindView(R.id.toolbar)
-    lateinit var toolbar: Toolbar
 
     lateinit var rvAdapter: BooksAdapter
 
@@ -62,14 +68,12 @@ class BooksActivity : AppCompatActivity() {
     private var isRoot = false
     private var uploadFile: File? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    @InjectPresenter
+    lateinit var booksPresenter: BooksPresenter
 
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_books)
+    override fun onActivityCreate(savedInstanceState: Bundle?) {
 
-        ButterKnife.bind(this)
-
-        setSupportActionBar(toolbar)
+        booksPresenter.loadRoot()
 
         firebaseStorage = FirebaseStorage.getInstance()
         storageReference = firebaseStorage.reference
@@ -77,91 +81,151 @@ class BooksActivity : AppCompatActivity() {
         rvBooksView.layoutManager = LinearLayoutManager(this)
         rvBooksView.setHasFixedSize(true)
 
-        rvAdapter = BooksAdapter()
+        ActivityCompat.requestPermissions(
+            this, arrayOf(
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ), REQUEST_CHECK_PERMISSIONS
+        )
+
+        rvAdapter = BooksAdapter(this)
         rvAdapter.addListener(object : BooksAdapter.OnClickListener {
             override fun onClick(book: BookModel) {
-                if (book.type == BookModel.Type.CATEGORY) {
-                    val parent = book.parent.toString()
-                    val bookTitle = book.title.toString()
-                    title = bookTitle
-                    showProgressLoadingList(true, withClear = true)
-                    currentCategoryStack.add(parent)
-                    rootStorage().child(parent)
-                        .listAll()
-                        .addOnSuccessListener { result ->
-                            loadData(result)
-                        }.addOnCompleteListener {
-                            checkFabIsUse()
-                        }
-
-                }
+                handleOnClickOnFile(book)
             }
         })
         rvBooksView.adapter = rvAdapter
 
         fabAddNewFile.setOnClickListener {
-            uploadFileOnStorage(currentCategoryStack.last())
+            handleFabClick()
         }
 
         checkFabIsUse()
 
+    }
+
+    override fun view(): Int = R.layout.activity_books
+
+    private fun handleFabClick() {
+        val selectAction = Common.inflateView(this, R.layout.select_action_view)
+
+        val btnCreateSubCategory = selectAction.findViewById<Button>(R.id.btnCreateSubCategory)
+        val btnUploadNewFile = selectAction.findViewById<Button>(R.id.btnUploadNewFile)
+
+        btnCreateSubCategory.setOnClickListener(this)
+        btnUploadNewFile.setOnClickListener(this)
+
+        Common.showAlertDialog(
+            this,
+            title = getString(R.string.select_action),
+            view = selectAction,
+        ).setNegativeButton(R.string.cancel) { dialog, _ ->
+            dialog.cancel()
+        }.show()
+    }
+
+    private fun handleOnClickOnFile(book: BookModel) {
+        if (book.type == BookModel.Type.CATEGORY) {
+            val parent = book.parent.toString()
+            val bookTitle = book.title.toString()
+            title = bookTitle
+            showProgressLoadingList(true, withClear = true)
+            currentCategoryStack.add(parent)
+            rootStorage().child(parent)
+                .listAll()
+                .addOnSuccessListener { result ->
+                    loadData(result)
+                }.addOnCompleteListener {
+                    checkFabIsUse()
+                }
+
+        }
+    }
+
+    override fun loadRootDirectories() {
         rootStorage().listAll()
             .addOnSuccessListener { result ->
                 loadData(result)
             }
     }
 
-    private fun uploadFileOnStorage(category: String) {
-        val selectBookView = LayoutInflater.from(this).inflate(R.layout.select_book_view, null)
+    private fun selectFileInStorage(category: String) {
+        val selectBookView = Common.inflateView(this, R.layout.select_book_view)
 
         tvFilePath = selectBookView.findViewById(R.id.tvFilePath)
         val btnSelect = selectBookView.findViewById<Button>(R.id.btnSelectBook)
 
         btnSelect.setOnClickListener {
-            UnicornFilePicker.from(this@BooksActivity)
-                .addConfigBuilder()
-                .selectMultipleFiles(false)
-                .setRootDirectory(Environment.getExternalStorageDirectory().absolutePath)
-                .showHiddenFiles(false)
-                .setFilters(arrayOf("pdf", "docx", "djvu", "epub", "fb2", "pptx"))
-                .theme(R.style.UnicornFilePicker_Default)
-                .addItemDivider(true)
-                .build()
-                .forResult(Constants.REQ_UNICORN_FILE)
+            Common.startFilePickerActivity(this@BooksActivity)
         }
 
-        val dialogSelectBook = Dialog(this)
-        dialogSelectBook.setContentView(R.layout.select_book_view)
-        dialogSelectBook.setTitle(R.string.upload)
-        dialogSelectBook.create()
-        dialogSelectBook.show()
+        Common.showAlertDialog(
+            this,
+            title = getString(R.string.upload),
+            message = getString(R.string.set_upload_file),
+            view = selectBookView
+        ).setPositiveButton(R.string.upload_btn_text) { _, _ ->
+            if (uploadFile != null) uploadFile(category)
+        }.show()
+    }
 
-        val alertDialog = AlertDialog.Builder(this)
-            .setTitle(R.string.upload)
-            .setMessage(R.string.set_upload_file)
-            .setView(selectBookView)
-            .setPositiveButton(R.string.upload_btn_text) { _, _ ->
-                if (uploadFile != null) {
-                    rootStorage().child(category).child(uploadFile!!.name)
-                        .putFile(uploadFile!!.toUri())
-                        .addOnProgressListener { uploadingTask ->
-                            val progress =
-                                (100 * uploadingTask.bytesTransferred) / uploadingTask.totalByteCount
-                            showProgressLoadingList(true, withClear = false)
-                        }
-                        .addOnCompleteListener { task ->
-                            if (task.isSuccessful) {
-                                showProgressLoadingList(true, withClear = true)
-                                rootStorage().child(category)
-                                    .listAll()
-                                    .addOnSuccessListener { result ->
-                                        loadData(result)
-                                    }
-                            }
+    override fun onClick(v: View?) {
+        when (v?.id) {
+            R.id.btnCreateSubCategory -> {
+                createNewSubCategory()
+            }
+            R.id.btnUploadNewFile -> {
+                selectFileInStorage(currentCategoryStack.last())
+            }
+        }
+    }
+
+    private fun createNewSubCategory() {
+
+        val enterTheNameSubcategory = Common.inflateView(this, R.layout.enter_the_name_subcategory)
+
+        val etSubcategoryName =
+            enterTheNameSubcategory.findViewById<EditText>(R.id.etSubcategoryName)
+
+        Common.showAlertDialog(
+            this,
+            title = getString(R.string.create_subcategory),
+            view = enterTheNameSubcategory
+        ).setNegativeButton(R.string.cancel) { dialog, _ -> dialog.cancel() }
+            .setPositiveButton(R.string.create) { _, _ ->
+                val name = etSubcategoryName.text.toString()
+                if (name.isNotEmpty()) {
+                    rootStorage().child(
+                        currentCategoryStack.last()
+                    )
+                }
+            }.show()
+    }
+
+    private fun uploadFile(category: String) {
+        progressBarUploadTask.visibility = View.VISIBLE
+        progressBarUploadTask.max = 100
+        rootStorage().child(category).child(uploadFile!!.name)
+            .putFile(uploadFile!!.toUri())
+            .addOnProgressListener { uploadingTask ->
+                val progress =
+                    (100 * uploadingTask.bytesTransferred) / uploadingTask.totalByteCount
+                progressBarUploadTask.progress = progress.toInt()
+            }
+            .addOnFailureListener {
+                ToBooksApp.toast(R.string.error_uploading)
+            }
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    showProgressLoadingList(isShow = true, withClear = true)
+                    rootStorage().child(category)
+                        .listAll()
+                        .addOnSuccessListener { result ->
+                            progressBarUploadTask.visibility = View.GONE
+                            loadData(result)
                         }
                 }
             }
-        alertDialog.show()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -192,7 +256,7 @@ class BooksActivity : AppCompatActivity() {
             books.add(
                 BookModel(
                     title = file.name,
-                    downloadUrl = file.downloadUrl.toString(),
+                    downloadUrl = file.downloadUrl,
                     type = BookModel.Type.BOOK
                 )
             )
@@ -253,6 +317,7 @@ class BooksActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.search -> {
+
             }
             R.id.sign_out -> {
                 ToBooksApp.authInstance().signOut()
@@ -261,14 +326,3 @@ class BooksActivity : AppCompatActivity() {
         return true
     }
 }
-
-
-
-
-
-
-
-
-
-
-

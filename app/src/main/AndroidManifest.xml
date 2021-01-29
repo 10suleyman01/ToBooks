@@ -24,7 +24,8 @@
         </activity>
         <activity android:name=".ui.activity.login.LoginActivity" />
         <activity android:name=".ui.activity.profile.ProfileActivity" />
-        <activity android:name=".ui.activity.books.BooksActivity" />
+        <activity android:name=".ui.activity.books.BooksActivity"
+            android:configChanges="screenSize|orientation"/>
     </application>
 
 </manifest>
