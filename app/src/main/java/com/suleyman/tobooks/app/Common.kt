@@ -6,11 +6,10 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.app.DownloadManager
 import android.content.Context
-import android.net.Uri
 import android.os.Environment
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import com.google.firebase.storage.ListResult
 import com.suleyman.tobooks.R
 import com.suleyman.tobooks.model.BookModel
 
@@ -52,14 +51,44 @@ object Common {
 
     fun downloadBook(context: Context, book: BookModel) {
         book.downloadUrl?.addOnSuccessListener {
-            val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+            val downloadManager =
+                context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
             val request = DownloadManager.Request(it)
             request.setTitle(book.title)
             request.setDescription(context.getString(R.string.downloading))
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, it.lastPathSegment)
+            request.setDestinationInExternalPublicDir(
+                Environment.DIRECTORY_DOWNLOADS,
+                it.lastPathSegment
+            )
             downloadManager.enqueue(request)
         }
+    }
+
+    fun loadData(
+        books: MutableList<BookModel>,
+        result: ListResult,
+        onCompleted: (MutableList<BookModel>) -> Unit?
+    ) {
+        result.prefixes.forEach { folder ->
+            books.add(
+                BookModel(
+                    title = folder.name,
+                    parent = folder.path,
+                    type = BookModel.Type.CATEGORY
+                )
+            )
+        }
+        result.items.forEach { file ->
+            books.add(
+                BookModel(
+                    title = file.name,
+                    downloadUrl = file.downloadUrl,
+                    type = BookModel.Type.BOOK
+                )
+            )
+        }
+        onCompleted(books)
     }
 
 }

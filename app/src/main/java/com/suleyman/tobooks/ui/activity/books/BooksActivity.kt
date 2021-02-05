@@ -1,85 +1,82 @@
 package com.suleyman.tobooks.ui.activity.books
 
-import abhishekti7.unicorn.filepicker.UnicornFilePicker
 import abhishekti7.unicorn.filepicker.utils.Constants
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Environment
-import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ProgressBar
+import android.view.animation.OvershootInterpolator
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.widget.Toolbar
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
+import androidx.core.view.ViewCompat
+import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import butterknife.BindView
-import butterknife.ButterKnife
-import com.arellomobile.mvp.presenter.InjectPresenter
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.ListResult
 import com.google.firebase.storage.StorageReference
 import com.suleyman.tobooks.R
 import com.suleyman.tobooks.app.Common
+import com.suleyman.tobooks.app.Common.loadData
 import com.suleyman.tobooks.app.ToBooksApp
-import com.suleyman.tobooks.base.BaseActivity
+import com.suleyman.tobooks.databinding.ActivityBooksBinding
+import com.suleyman.tobooks.databinding.EnterTheNameSubcategoryBinding
+import com.suleyman.tobooks.databinding.SelectBookViewBinding
 import com.suleyman.tobooks.model.BookModel
+import kotlinx.coroutines.flow.collect
+import me.aflak.libraries.BookModelFilter
 import java.io.File
-import java.io.InputStream
+import java.util.*
 
-@SuppressLint("NonConstantResourceId")
-class BooksActivity : BaseActivity(), BookView, View.OnClickListener {
+class BooksActivity : AppCompatActivity(), View.OnClickListener,
+    SearchView.OnQueryTextListener {
 
-    private val TAG = "BooksActivity"
-    private val REQUEST_CHECK_PERMISSIONS = 1263
+    companion object {
+        private const val REQUEST_CHECK_PERMISSIONS = 1263
+    }
 
-    @BindView(R.id.rvBooksView)
-    lateinit var rvBooksView: RecyclerView
-
-    @BindView(R.id.progressBarBooks)
-    lateinit var progressBarBooks: ProgressBar
-
-    @BindView(R.id.progressBarUploadTask)
-    lateinit var progressBarUploadTask: ProgressBar
-
-    @BindView(R.id.fabAddNewFile)
-    lateinit var fabAddNewFile: FloatingActionButton
-
-    lateinit var rvAdapter: BooksAdapter
+    private lateinit var searchView: SearchView
+    private lateinit var rvAdapter: BooksAdapter
 
     private lateinit var firebaseStorage: FirebaseStorage
     private lateinit var storageReference: StorageReference
 
     private val books = mutableListOf<BookModel>()
+    private var booksFiltered = mutableListOf<BookModel>()
     private var currentCategoryStack = mutableListOf<String>()
 
     private lateinit var tvFilePath: TextView
 
     private var isRoot = false
     private var uploadFile: File? = null
+    private var isFabOpenActions = false
 
-    @InjectPresenter
-    lateinit var booksPresenter: BooksPresenter
+    private var _binding: ActivityBooksBinding? = null
+    private val binding get() = _binding!!
 
-    override fun onActivityCreate(savedInstanceState: Bundle?) {
+    private val bookUploadViewModel: BookUploadViewModel by viewModels()
+    private val bookLoadDirectoriesViewModel: BookLoadDirectoriesViewModel by viewModels()
 
-        booksPresenter.loadRoot()
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        _binding = ActivityBooksBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        setSupportActionBar(binding.include.toolbar)
 
         firebaseStorage = FirebaseStorage.getInstance()
         storageReference = firebaseStorage.reference
 
-        rvBooksView.layoutManager = LinearLayoutManager(this)
-        rvBooksView.setHasFixedSize(true)
+        loadRootDirectories()
+
+        binding.rvBooksView.layoutManager = LinearLayoutManager(this)
+        binding.rvBooksView.setHasFixedSize(true)
 
         ActivityCompat.requestPermissions(
             this, arrayOf(
@@ -94,9 +91,9 @@ class BooksActivity : BaseActivity(), BookView, View.OnClickListener {
                 handleOnClickOnFile(book)
             }
         })
-        rvBooksView.adapter = rvAdapter
+        binding.rvBooksView.adapter = rvAdapter
 
-        fabAddNewFile.setOnClickListener {
+        binding.fabOpenActions.setOnClickListener {
             handleFabClick()
         }
 
@@ -104,24 +101,37 @@ class BooksActivity : BaseActivity(), BookView, View.OnClickListener {
 
     }
 
-    override fun view(): Int = R.layout.activity_books
-
     private fun handleFabClick() {
-        val selectAction = Common.inflateView(this, R.layout.select_action_view)
 
-        val btnCreateSubCategory = selectAction.findViewById<Button>(R.id.btnCreateSubCategory)
-        val btnUploadNewFile = selectAction.findViewById<Button>(R.id.btnUploadNewFile)
+        binding.fabAddNewFile.setOnClickListener {
+            selectFileInStorage(currentCategoryStack.last())
+        }
 
-        btnCreateSubCategory.setOnClickListener(this)
-        btnUploadNewFile.setOnClickListener(this)
+        binding.fabAddNewCategory.setOnClickListener {
+            createNewSubCategory()
+        }
 
-        Common.showAlertDialog(
-            this,
-            title = getString(R.string.select_action),
-            view = selectAction,
-        ).setNegativeButton(R.string.cancel) { dialog, _ ->
-            dialog.cancel()
-        }.show()
+        if (!isFabOpenActions) {
+            isFabOpenActions = true
+            binding.fabAddNewFile.animate().translationY(-resources.getDimension(R.dimen.mg65dp))
+            binding.fabAddNewCategory.animate().translationY(-resources.getDimension(R.dimen.mg130dp))
+            rotate(135.0f)
+        } else {
+            isFabOpenActions = false
+            rotate(0f)
+            binding.fabAddNewFile.animate().translationY(0f)
+            binding.fabAddNewCategory.animate().translationY(0f)
+        }
+
+    }
+
+    private fun rotate(value: Float) {
+        ViewCompat.animate(binding.fabOpenActions)
+            .rotation(value)
+            .withLayer()
+            .setDuration(300L)
+            .setInterpolator(OvershootInterpolator(10.0f))
+            .start()
     }
 
     private fun handleOnClickOnFile(book: BookModel) {
@@ -129,12 +139,13 @@ class BooksActivity : BaseActivity(), BookView, View.OnClickListener {
             val parent = book.parent.toString()
             val bookTitle = book.title.toString()
             title = bookTitle
+            booksFiltered.clear()
             showProgressLoadingList(true, withClear = true)
             currentCategoryStack.add(parent)
             rootStorage().child(parent)
                 .listAll()
                 .addOnSuccessListener { result ->
-                    loadData(result)
+                    loadBooks(result)
                 }.addOnCompleteListener {
                     checkFabIsUse()
                 }
@@ -142,18 +153,39 @@ class BooksActivity : BaseActivity(), BookView, View.OnClickListener {
         }
     }
 
-    override fun loadRootDirectories() {
-        rootStorage().listAll()
-            .addOnSuccessListener { result ->
-                loadData(result)
+    private fun loadRootDirectories() {
+
+        bookLoadDirectoriesViewModel.loadRootStorage(rootStorage())
+
+        lifecycleScope.launchWhenStarted {
+            bookLoadDirectoriesViewModel.bookUiState.collect {
+                when (it) {
+                    is BookLoadDirectoriesViewModel.LoadDirectoriesState.Success -> {
+                        loadBooks(it.result)
+                    }
+                    is BookLoadDirectoriesViewModel.LoadDirectoriesState.Error -> {
+                        ToBooksApp.toast(it.message)
+                    }
+                    is BookLoadDirectoriesViewModel.LoadDirectoriesState.Loading -> {
+                    }
+                    else -> Unit
+                }
             }
+        }
+    }
+
+    private fun loadBooks(result: ListResult) {
+        loadData(books, result, onCompleted = { booksResult ->
+            rvAdapter.setBooks(booksResult)
+            showProgressLoadingList(isShow = false, withClear = false)
+        })
     }
 
     private fun selectFileInStorage(category: String) {
-        val selectBookView = Common.inflateView(this, R.layout.select_book_view)
+        val selectBookView = SelectBookViewBinding.inflate(layoutInflater)
 
-        tvFilePath = selectBookView.findViewById(R.id.tvFilePath)
-        val btnSelect = selectBookView.findViewById<Button>(R.id.btnSelectBook)
+        tvFilePath = selectBookView.tvFilePath
+        val btnSelect = selectBookView.btnSelectBook
 
         btnSelect.setOnClickListener {
             Common.startFilePickerActivity(this@BooksActivity)
@@ -163,77 +195,97 @@ class BooksActivity : BaseActivity(), BookView, View.OnClickListener {
             this,
             title = getString(R.string.upload),
             message = getString(R.string.set_upload_file),
-            view = selectBookView
+            view = selectBookView.root
         ).setPositiveButton(R.string.upload_btn_text) { _, _ ->
             if (uploadFile != null) uploadFile(category)
         }.show()
     }
 
     override fun onClick(v: View?) {
-        when (v?.id) {
-            R.id.btnCreateSubCategory -> {
-                createNewSubCategory()
-            }
-            R.id.btnUploadNewFile -> {
-                selectFileInStorage(currentCategoryStack.last())
-            }
+    }
+
+    override fun onQueryTextSubmit(query: String?): Boolean {
+        return true
+    }
+
+    override fun onQueryTextChange(newText: String?): Boolean {
+        if (newText.toString().isEmpty()) {
+            booksFiltered.clear()
+            rvAdapter.setBooks(books)
+        } else {
+            booksFiltered = BookModelFilter.builder()
+                .title()
+                .contains(newText.toString())
+                .on(books)
+            rvAdapter.setBooks(booksFiltered)
         }
+        return false
     }
 
     private fun createNewSubCategory() {
 
-        val enterTheNameSubcategory = Common.inflateView(this, R.layout.enter_the_name_subcategory)
+        val enterTheNameSubcategory = EnterTheNameSubcategoryBinding.inflate(layoutInflater)
 
         val etSubcategoryName =
-            enterTheNameSubcategory.findViewById<EditText>(R.id.etSubcategoryName)
+            enterTheNameSubcategory.etSubcategoryName
 
         Common.showAlertDialog(
             this,
             title = getString(R.string.create_subcategory),
-            view = enterTheNameSubcategory
+            view = enterTheNameSubcategory.root
         ).setNegativeButton(R.string.cancel) { dialog, _ -> dialog.cancel() }
             .setPositiveButton(R.string.create) { _, _ ->
                 val name = etSubcategoryName.text.toString()
                 if (name.isNotEmpty()) {
+                    // create new folder on storage
+                    val file = File("test.txt")
                     rootStorage().child(
                         currentCategoryStack.last()
+                    ).child(name).putFile(
+                        file.toUri()
                     )
                 }
             }.show()
     }
 
     private fun uploadFile(category: String) {
-        progressBarUploadTask.visibility = View.VISIBLE
-        progressBarUploadTask.max = 100
-        rootStorage().child(category).child(uploadFile!!.name)
-            .putFile(uploadFile!!.toUri())
-            .addOnProgressListener { uploadingTask ->
-                val progress =
-                    (100 * uploadingTask.bytesTransferred) / uploadingTask.totalByteCount
-                progressBarUploadTask.progress = progress.toInt()
-            }
-            .addOnFailureListener {
-                ToBooksApp.toast(R.string.error_uploading)
-            }
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    showProgressLoadingList(isShow = true, withClear = true)
-                    rootStorage().child(category)
-                        .listAll()
-                        .addOnSuccessListener { result ->
-                            progressBarUploadTask.visibility = View.GONE
-                            loadData(result)
-                        }
+
+        bookUploadViewModel.uploadFile(
+            rootStorage(),
+            category,
+            uploadFile!!
+        )
+
+        lifecycleScope.launchWhenStarted {
+            bookUploadViewModel.bookUiState.collect {
+                when (it) {
+                    is BookUploadViewModel.BookUploadFileState.Success -> {
+                        binding.progressBarUploadTask.isVisible = false
+                        loadBooks(it.result)
+                    }
+                    is BookUploadViewModel.BookUploadFileState.Error -> {
+                        ToBooksApp.toast(it.message)
+                    }
+                    is BookUploadViewModel.BookUploadFileState.Progress -> {
+                        binding.progressBarUploadTask.isVisible = true
+                        binding.progressBarUploadTask.max = 100
+                        binding.progressBarUploadTask.progress = it.progress
+                    }
+                    is BookUploadViewModel.BookUploadFileState.Loading -> {
+                        showProgressLoadingList(isShow = true, withClear = true)
+                    }
+                    else -> Unit
                 }
             }
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (data != null) {
             if (requestCode == Constants.REQ_UNICORN_FILE) {
                 val files = data.getStringArrayListExtra("filePaths")
-                if (files != null && files.size > 0) {
-                    uploadFile = File(files[0])
+                if (!files.isNullOrEmpty()) {
+                    uploadFile = File(files.first())
                     if (uploadFile != null) {
                         tvFilePath.text = uploadFile!!.name
                     }
@@ -242,44 +294,26 @@ class BooksActivity : BaseActivity(), BookView, View.OnClickListener {
         } else super.onActivityResult(requestCode, resultCode, data)
     }
 
-    private fun loadData(result: ListResult) {
-        result.prefixes.forEach { folder ->
-            books.add(
-                BookModel(
-                    title = folder.name,
-                    parent = folder.path,
-                    type = BookModel.Type.CATEGORY
-                )
-            )
-        }
-        result.items.forEach { file ->
-            books.add(
-                BookModel(
-                    title = file.name,
-                    downloadUrl = file.downloadUrl,
-                    type = BookModel.Type.BOOK
-                )
-            )
-        }
-        rvAdapter.setBooks(books)
-        showProgressLoadingList(isShow = false, withClear = false)
-    }
 
     private fun showProgressLoadingList(isShow: Boolean, withClear: Boolean) {
         if (withClear) {
-            rvAdapter.clearAll()
+            rvAdapter.clear()
         }
-        if (isShow) progressBarBooks.visibility = View.VISIBLE
-        else progressBarBooks.visibility = View.GONE
+        binding.progressBarBooks.isVisible = isShow
     }
 
     private fun checkFabIsUse() {
-        if (currentCategoryStack.isNotEmpty()) {
-            fabAddNewFile.visibility = View.VISIBLE
-        } else fabAddNewFile.visibility = View.GONE
+        binding.fabOpenActions.isVisible = currentCategoryStack.isNotEmpty()
+        binding.fabAddNewFile.isVisible = currentCategoryStack.isNotEmpty()
+        binding.fabAddNewCategory.isVisible = currentCategoryStack.isNotEmpty()
     }
 
     override fun onBackPressed() {
+
+        if (searchView.isActivated) {
+            searchView.dispatchSetActivated(false)
+        }
+
         showProgressLoadingList(true, withClear = true)
         if (currentCategoryStack.isNotEmpty() && currentCategoryStack.size > 1) {
             currentCategoryStack.removeLast()
@@ -289,7 +323,7 @@ class BooksActivity : BaseActivity(), BookView, View.OnClickListener {
             rootStorage().child(lastCategory)
                 .listAll()
                 .addOnSuccessListener { result ->
-                    loadData(result)
+                    loadBooks(result)
                 }
         } else if (!isRoot && currentCategoryStack.size == 1) {
             currentCategoryStack.removeLast()
@@ -297,8 +331,11 @@ class BooksActivity : BaseActivity(), BookView, View.OnClickListener {
             title = getString(R.string.app_name)
             rootStorage().listAll()
                 .addOnSuccessListener { result ->
-                    loadData(result)
+                    loadBooks(result)
                     isRoot = false
+                    binding.fabAddNewFile.animate().translationY(0f)
+                    binding.fabAddNewCategory.animate().translationY(0f)
+                    rotate(0f)
                 }.addOnCompleteListener {
                     checkFabIsUse()
                 }
@@ -311,18 +348,26 @@ class BooksActivity : BaseActivity(), BookView, View.OnClickListener {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_books, menu)
+
+        val searchItem = menu?.findItem(R.id.search)
+        searchView = searchItem?.actionView as SearchView
+        searchView.setOnQueryTextListener(this)
+
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.search -> {
-
-            }
             R.id.sign_out -> {
                 ToBooksApp.authInstance().signOut()
+                finish()
             }
         }
         return true
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
     }
 }

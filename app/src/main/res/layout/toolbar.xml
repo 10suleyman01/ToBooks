@@ -9,7 +9,7 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:theme="@style/ToolbarStyle"
+        app:theme="@style/ToolbarStyle"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         tools:title="@string/search" />
 

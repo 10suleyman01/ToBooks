@@ -15,14 +15,20 @@
     <string name="cancel">Отмена</string>
     <string name="select_category">Выбрать категорию</string>
     <string name="enter_the_name">Введите имя папки</string>
-    <string name="author_name">Имя автора</string>
     <string name="create_subcategory">Создать подкатегорию</string>
-    <string name="book_name">Имя книги</string>
     <string name="set_upload_file">Выберите книгу</string>
     <string name="download">Скачать</string>
     <string name="select">Выбрать</string>
     <string name="create">Создать</string>
+    <string name="send_link_to_your_mail">Вам на почту отправлена ссылка!</string>
+    <string name="forgot_password">Забыли пароль?</string>
     <string name="error_uploading">Ошибка загрузки</string>
     <string name="select_action">Выберите действие</string>
     <string name="downloading">Скачивание</string>
+    <string name="enter_the_email">Введите почту</string>
+    <string name="reset_password">Восстановление пароля</string>
+    <string name="send">Отправить</string>
+    <string name="enter_correct_email">Введите корректный email</string>
+    <string name="books">Книги</string>
+    <string name="audio_books">Аудиокниги</string>
 </resources>

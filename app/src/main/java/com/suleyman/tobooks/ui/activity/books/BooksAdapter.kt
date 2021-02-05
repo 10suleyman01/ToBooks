@@ -12,19 +12,23 @@ import butterknife.BindView
 import butterknife.ButterKnife
 import com.suleyman.tobooks.R
 import com.suleyman.tobooks.app.Common
+import com.suleyman.tobooks.databinding.BookItemBinding
 import com.suleyman.tobooks.model.BookModel
+import java.util.*
 
 class BooksAdapter(val context: Context) : RecyclerView.Adapter<BooksAdapter.BookHolder>() {
 
     private var bookList = mutableListOf<BookModel>()
     private var listeners = mutableListOf<OnClickListener>()
 
-    fun setBooks(bookList: MutableList<BookModel>) {
-        this.bookList = bookList
+    fun setBooks(newBookList: MutableList<BookModel>, withClear: Boolean = false) {
+        if (withClear) this.bookList.clear()
+        this.bookList = newBookList
         notifyDataSetChanged()
     }
 
-    fun clearAll() {
+
+    fun clear() {
         bookList.clear()
         notifyDataSetChanged()
     }
@@ -65,15 +69,23 @@ class BooksAdapter(val context: Context) : RecyclerView.Adapter<BooksAdapter.Boo
             tvBookTitle.text = book.title
 
             if (book.type == BookModel.Type.BOOK) {
-                btnBookDownload.setImageResource(R.drawable.baseline_get_app_24)
+                btnBookDownload.setImageResource(R.drawable.round_get_app_24)
                 btnBookDownload.setOnClickListener {
                     Common.downloadBook(this@BooksAdapter.context, book)
                 }
-                bookImageView.setImageResource(R.drawable.baseline_insert_drive_file_24)
+
+                val extIndex = book.title?.lastIndexOf(".")
+                when (book.title?.substring(extIndex!! + 1)) {
+                    "pdf" -> {
+                        bookImageView.setImageResource(R.drawable.baseline_picture_as_pdf_grey_400_24dp)
+                    }
+                    else ->  bookImageView.setImageResource(R.drawable.baseline_insert_drive_file_24dp)
+                }
                 bookImageView.visibility = View.VISIBLE
             } else {
                 bookImageView.visibility = View.GONE
                 btnBookDownload.setImageResource(R.drawable.baseline_chevron_right_24)
+                btnBookDownload.setOnClickListener(null)
             }
 
             if (listeners.size > 0)

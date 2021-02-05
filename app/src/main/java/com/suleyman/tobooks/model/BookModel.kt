@@ -2,7 +2,9 @@ package com.suleyman.tobooks.model
 
 import android.net.Uri
 import com.google.android.gms.tasks.Task
+import me.aflak.filter_annotation.Filterable
 
+@Filterable
 data class BookModel(
     val title: String? = null,
     val downloadUrl: Task<Uri>? = null,

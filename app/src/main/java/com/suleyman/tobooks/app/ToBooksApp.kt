@@ -34,6 +34,8 @@ class ToBooksApp: Application() {
         fun toast(message: String) {
             Toast.makeText(context, message, Toast.LENGTH_LONG).show()
         }
+
+        fun getString(resId: Int) = context.getString(resId)
     }
 
 
