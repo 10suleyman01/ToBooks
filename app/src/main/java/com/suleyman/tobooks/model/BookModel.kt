@@ -8,7 +8,7 @@ import me.aflak.filter_annotation.Filterable
 data class BookModel(
     val title: String? = null,
     val downloadUrl: Task<Uri>? = null,
-    val parent: String? = null,
+    val path: String? = null,
     val type: Type? = Type.CATEGORY,
 ) {
     enum class Type {

@@ -3,4 +3,8 @@
     <item
         android:title="@string/sign_out"
         android:id="@+id/sign_out"/>
+
+    <item
+        android:title="@string/help_to_books"
+        android:id="@+id/sendHelpMessage"/>
 </menu>

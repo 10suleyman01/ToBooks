@@ -6,33 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".ui.activity.books.BooksActivity">
 
-    <include
-        android:id="@+id/include"
-        layout="@layout/toolbar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tabLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/include">
-
-        <com.google.android.material.tabs.TabItem
-            android:icon="@drawable/round_menu_book_black_24dp"
-            android:text="@string/books"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-
-        <com.google.android.material.tabs.TabItem
-            android:icon="@drawable/round_library_music_black_24dp"
-            android:text="@string/audio_books"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-
-    </com.google.android.material.tabs.TabLayout>
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvBooksView"
         android:layout_width="0dp"
@@ -54,10 +27,10 @@
         android:labelFor="@id/rvBooksView"
         android:progressTint="#FFFFFF"
         android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="@+id/rvBooksView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/include"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/rvBooksView"
+        app:layout_constraintStart_toStartOf="@+id/rvBooksView"
+        app:layout_constraintTop_toBottomOf="@+id/progressBarUploadTask"
         tools:visibility="visible" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -113,7 +86,7 @@
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tabLayout"
+        app:layout_constraintTop_toTopOf="parent"
         tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

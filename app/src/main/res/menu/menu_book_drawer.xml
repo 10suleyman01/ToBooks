@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <group
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/books"
+            android:title="@string/books"
+            android:checked="true"
+            android:icon="@drawable/round_menu_book_black_24dp"/>
+
+        <item
+            android:id="@+id/audios"
+            android:title="@string/audio_books"
+            android:icon="@drawable/round_library_music_black_24dp"/>
+    </group>
+
+
+
+</menu>

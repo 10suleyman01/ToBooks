@@ -4,11 +4,8 @@
     <item
         app:showAsAction="always|collapseActionView"
         android:id="@+id/search"
-        android:icon="@drawable/round_search_24"
+        android:icon="@drawable/round_search_white_24dp"
         android:title="@string/search"
         app:actionViewClass="androidx.appcompat.widget.SearchView" />
 
-    <item
-        android:title="@string/sign_out"
-        android:id="@+id/sign_out"/>
 </menu>

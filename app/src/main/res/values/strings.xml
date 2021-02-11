@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">ToBooks</string>
-    <string name="login">Логин</string>
+    <string name="login">Почта или телефон</string>
     <string name="password">Пароль</string>
     <string name="sign_in">Войти</string>
     <string name="sign_out">Выйти</string>
@@ -27,8 +27,18 @@
     <string name="downloading">Скачивание</string>
     <string name="enter_the_email">Введите почту</string>
     <string name="reset_password">Восстановление пароля</string>
+    <string name="open">Открыть</string>
+    <string name="close">Закрыть</string>
     <string name="send">Отправить</string>
     <string name="enter_correct_email">Введите корректный email</string>
     <string name="books">Книги</string>
     <string name="audio_books">Аудиокниги</string>
+    <string name="help_to_books">Обратная связь</string>
+    <string name="subject_message">Тема сообщения</string>
+    <string name="text_message">Ваше сообщение</string>
+    <string name="send_with">Отправить с помощью</string>
+    <string name="invalid_number_format">Введите корректный номер в формате(+79000000000)</string>
+    <string name="more_requests_try_again_later">Слишком много запросов, попробуйте позже</string>
+    <string name="sms_code_message">На Ваш номер отправлен код с потдверждением</string>
+    <string name="sms">SMS-код</string>
 </resources>

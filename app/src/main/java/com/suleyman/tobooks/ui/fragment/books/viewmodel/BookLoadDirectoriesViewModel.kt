@@ -1,4 +1,4 @@
-package com.suleyman.tobooks.ui.activity.books
+package com.suleyman.tobooks.ui.fragment.books.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.google.firebase.storage.ListResult

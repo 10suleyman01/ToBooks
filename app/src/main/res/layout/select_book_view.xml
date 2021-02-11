@@ -15,6 +15,7 @@
         android:maxEms="18"
         android:maxLines="1"
         android:textSize="12sp"
+        android:padding="6dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/btnSelectBook"
         app:layout_constraintStart_toStartOf="parent"

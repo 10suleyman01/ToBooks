@@ -1,21 +1,34 @@
-package com.suleyman.tobooks.app
+package com.suleyman.tobooks.utils
 
 import abhishekti7.unicorn.filepicker.UnicornFilePicker
 import abhishekti7.unicorn.filepicker.utils.Constants
-import android.app.Activity
 import android.app.AlertDialog
 import android.app.DownloadManager
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.pdf.PdfRenderer
 import android.os.Environment
+import android.os.ParcelFileDescriptor
 import android.view.LayoutInflater
 import android.view.View
+import androidx.fragment.app.Fragment
 import com.google.firebase.storage.ListResult
 import com.suleyman.tobooks.R
 import com.suleyman.tobooks.model.BookModel
+import java.io.File
+import android.R.attr.bitmap
+import android.R.attr.bottom
+import org.koin.java.KoinJavaComponent.inject
+
 
 object Common {
 
+    const val APP_EMAIL = "tobooks.net@gmail.com"
     private const val TAG = "Common"
+    const val extConfig: String = ".fconfig"
+    const val filePaths: String = "filePaths"
+
+    private val context: Context by inject(Context::class.java)
 
     fun showAlertDialog(
         context: Context,
@@ -29,8 +42,8 @@ object Common {
             .setView(view)
     }
 
-    fun startFilePickerActivity(activity: Activity) {
-        UnicornFilePicker.from(activity)
+    fun startFilePickerActivity(fragment: Fragment) {
+        UnicornFilePicker.from(fragment)
             .addConfigBuilder()
             .selectMultipleFiles(false)
             .setRootDirectory(Environment.getExternalStorageDirectory().absolutePath)
@@ -74,21 +87,46 @@ object Common {
             books.add(
                 BookModel(
                     title = folder.name,
-                    parent = folder.path,
+                    path = folder.path,
                     type = BookModel.Type.CATEGORY
                 )
             )
         }
         result.items.forEach { file ->
-            books.add(
-                BookModel(
-                    title = file.name,
-                    downloadUrl = file.downloadUrl,
-                    type = BookModel.Type.BOOK
+            if (!file.name.endsWith(extConfig)) {
+                books.add(
+                    BookModel(
+                        title = file.name,
+                        downloadUrl = file.downloadUrl,
+                        type = BookModel.Type.BOOK
+                    )
                 )
-            )
+            }
         }
         onCompleted(books)
+    }
+
+    fun getBitmapFromPdf(file: File): Bitmap {
+        val renderer = PdfRenderer(
+            ParcelFileDescriptor.open(
+                file,
+                ParcelFileDescriptor.MODE_READ_ONLY
+            )
+        )
+        var bitmap: Bitmap? = null
+        val pageCount = renderer.pageCount
+        (0..1).forEach { i ->
+            val page = renderer.openPage(i)
+            val width: Int = context.resources.displayMetrics.densityDpi / 72 * page.width
+            val height: Int = context.resources.displayMetrics.densityDpi / 72 * page.height
+            bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            bitmap?.let {
+                page.render(it, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+            }
+            page.close()
+        }
+
+        return bitmap!!
     }
 
 }

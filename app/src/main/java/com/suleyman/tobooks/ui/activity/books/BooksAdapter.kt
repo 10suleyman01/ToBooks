@@ -5,14 +5,11 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.suleyman.tobooks.R
-import com.suleyman.tobooks.app.Common
 import com.suleyman.tobooks.databinding.BookItemBinding
+import com.suleyman.tobooks.utils.Common
 import com.suleyman.tobooks.model.BookModel
 import java.util.*
 
@@ -27,7 +24,6 @@ class BooksAdapter(val context: Context) : RecyclerView.Adapter<BooksAdapter.Boo
         notifyDataSetChanged()
     }
 
-
     fun clear() {
         bookList.clear()
         notifyDataSetChanged()
@@ -39,65 +35,53 @@ class BooksAdapter(val context: Context) : RecyclerView.Adapter<BooksAdapter.Boo
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BookHolder {
         return BookHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.book_item, parent, false)
+            BookItemBinding.inflate(
+                LayoutInflater.from(parent.context), parent, false)
         )
     }
 
     override fun onBindViewHolder(holder: BookHolder, position: Int) {
-        holder.bindBookView(bookList[position])
+        holder.bindBookView(bookList[position], position)
     }
-
     override fun getItemCount(): Int = bookList.size
 
     @SuppressLint("NonConstantResourceId")
-    inner class BookHolder(private val itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class BookHolder(private val itemViewBinding: BookItemBinding) : RecyclerView.ViewHolder(itemViewBinding.root) {
 
-        init {
-            ButterKnife.bind(this, itemView)
-        }
-
-        @BindView(R.id.tvBookTitle)
-        lateinit var tvBookTitle: TextView
-
-        @BindView(R.id.btnDownloadBook)
-        lateinit var btnBookDownload: ImageView
-
-        @BindView(R.id.bookImage)
-        lateinit var bookImageView: ImageView
-
-        fun bindBookView(book: BookModel) {
-            tvBookTitle.text = book.title
-
-            if (book.type == BookModel.Type.BOOK) {
-                btnBookDownload.setImageResource(R.drawable.round_get_app_24)
-                btnBookDownload.setOnClickListener {
-                    Common.downloadBook(this@BooksAdapter.context, book)
-                }
-
-                val extIndex = book.title?.lastIndexOf(".")
-                when (book.title?.substring(extIndex!! + 1)) {
-                    "pdf" -> {
-                        bookImageView.setImageResource(R.drawable.baseline_picture_as_pdf_grey_400_24dp)
+        fun bindBookView(book: BookModel, position: Int) {
+            with(itemViewBinding) {
+                tvBookTitle.text = book.title
+                if (book.type == BookModel.Type.BOOK) {
+                    btnDownloadBook.setImageResource(R.drawable.round_get_app_24)
+                    btnDownloadBook.setOnClickListener {
+                        Common.downloadBook(this@BooksAdapter.context, book)
                     }
-                    else ->  bookImageView.setImageResource(R.drawable.baseline_insert_drive_file_24dp)
+                    val extIndex = book.title?.lastIndexOf(".")
+                    when (book.title?.substring(extIndex!! + 1)) {
+                        "pdf" -> {
+                            bookImage.setImageResource(R.drawable.baseline_picture_as_pdf_grey_400_24dp)
+                        }
+                        else ->  bookImage.setImageResource(R.drawable.ic_baseline_library_books_24)
+                    }
+                    bookImage.isVisible = true
+                } else {
+                    bookImage.isVisible = false
+                    btnDownloadBook.setImageResource(R.drawable.baseline_chevron_right_24)
+                    btnDownloadBook.setOnClickListener(null)
                 }
-                bookImageView.visibility = View.VISIBLE
-            } else {
-                bookImageView.visibility = View.GONE
-                btnBookDownload.setImageResource(R.drawable.baseline_chevron_right_24)
-                btnBookDownload.setOnClickListener(null)
             }
+
 
             if (listeners.size > 0)
                 listeners.forEach { listener ->
-                    itemView.setOnClickListener { _ ->
-                        listener.onClick(book)
+                    itemView.setOnClickListener {
+                        listener.onClick(book, position)
                     }
                 }
         }
     }
 
     interface OnClickListener {
-        fun onClick(book: BookModel)
+        fun onClick(book: BookModel, position: Int)
     }
 }

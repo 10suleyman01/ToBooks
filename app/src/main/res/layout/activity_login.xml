@@ -7,7 +7,7 @@
     tools:context=".ui.activity.login.LoginActivity">
 
     <include
-        android:id="@+id/include2"
+        android:id="@+id/includeLoginToolbar"
         layout="@layout/toolbar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -19,16 +19,16 @@
         android:layout_height="wrap_content"
         android:hint="@string/login"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/tvAppName"
+        app:layout_constraintStart_toStartOf="@+id/tvAppName"
         app:layout_constraintTop_toTopOf="parent">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etLogin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:ems="10"
             android:background="@color/white"
+            android:ems="10"
             android:inputType="textEmailAddress" />
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -39,17 +39,17 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:hint="@string/password"
-        app:passwordToggleEnabled="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tInLayoutLogin">
+        app:layout_constraintEnd_toEndOf="@+id/tvAppName"
+        app:layout_constraintStart_toStartOf="@+id/tvAppName"
+        app:layout_constraintTop_toBottomOf="@+id/tInLayoutLogin"
+        app:passwordToggleEnabled="true">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etPassword"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:ems="10"
             android:background="@color/white"
+            android:ems="10"
             android:inputType="textPassword" />
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -62,19 +62,20 @@
         android:layout_marginTop="8dp"
         android:text="@string/sign_in"
         app:icon="@drawable/baseline_login_white_24dp"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/tInLayoutPassword"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/tInLayoutPassword"
         app:layout_constraintTop_toBottomOf="@+id/tInLayoutPassword" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSignUp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:text="@string/sign_up"
         app:icon="@drawable/baseline_person_add_alt_1_white_24dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/tInLayoutPassword"
+        app:layout_constraintStart_toStartOf="@+id/tInLayoutPassword"
         app:layout_constraintTop_toBottomOf="@+id/btnSignIn" />
 
     <androidx.constraintlayout.widget.Guideline
@@ -94,7 +95,7 @@
         app:layout_constraintBottom_toTopOf="@+id/guideline"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/include2" />
+        app:layout_constraintTop_toBottomOf="@+id/includeLoginToolbar" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/tvForgotPassword"
@@ -103,7 +104,21 @@
         android:text="@string/forgot_password"
         android:textColor="@color/primary_dark"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/tInLayoutPassword"
+        app:layout_constraintStart_toStartOf="@+id/tInLayoutPassword"
         app:layout_constraintTop_toBottomOf="@+id/btnSignUp" />
+
+    <ProgressBar
+        android:id="@+id/pbLoadingLogin"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintEnd_toEndOf="@+id/tvAppName"
+        app:layout_constraintStart_toStartOf="@+id/tvAppName"
+        app:layout_constraintTop_toBottomOf="@+id/tvAppName"
+        tools:visibility="visible" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
