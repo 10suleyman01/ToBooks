@@ -14,6 +14,35 @@
             android:id="@+id/audios"
             android:title="@string/audio_books"
             android:icon="@drawable/round_library_music_black_24dp"/>
+
+        <item
+            android:id="@+id/torgBooks"
+            android:title="@string/market"
+            android:icon="@drawable/baseline_attach_money_black_24dp"/>
+
+    </group>
+
+
+    <group
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/settings"
+            android:checkable="true"
+            android:title="@string/settings"
+            android:icon="@drawable/round_settings_black_24dp"/>
+
+        <item
+            android:id="@+id/help"
+            android:checkable="false"
+            android:title="@string/help_to_books"
+            android:icon="@drawable/round_live_help_black_24dp"/>
+
+        <item
+            android:id="@+id/sign_out"
+            android:checkable="false"
+            android:title="@string/sign_out"
+            android:icon="@drawable/round_exit_to_app_black_24dp"/>
+
     </group>
 
 

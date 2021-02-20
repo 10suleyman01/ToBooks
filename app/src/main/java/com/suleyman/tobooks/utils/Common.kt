@@ -5,20 +5,13 @@ import abhishekti7.unicorn.filepicker.utils.Constants
 import android.app.AlertDialog
 import android.app.DownloadManager
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.pdf.PdfRenderer
 import android.os.Environment
-import android.os.ParcelFileDescriptor
-import android.view.LayoutInflater
 import android.view.View
-import androidx.fragment.app.Fragment
 import com.google.firebase.storage.ListResult
 import com.suleyman.tobooks.R
 import com.suleyman.tobooks.model.BookModel
-import java.io.File
-import android.R.attr.bitmap
-import android.R.attr.bottom
-import org.koin.java.KoinJavaComponent.inject
+import com.google.firebase.storage.StorageReference
+import com.suleyman.tobooks.ui.activity.upload.UploadFileActivity
 
 
 object Common {
@@ -27,8 +20,6 @@ object Common {
     private const val TAG = "Common"
     const val extConfig: String = ".fconfig"
     const val filePaths: String = "filePaths"
-
-    private val context: Context by inject(Context::class.java)
 
     fun showAlertDialog(
         context: Context,
@@ -42,8 +33,8 @@ object Common {
             .setView(view)
     }
 
-    fun startFilePickerActivity(fragment: Fragment) {
-        UnicornFilePicker.from(fragment)
+    fun startFilePickerActivity(activity: UploadFileActivity) {
+        UnicornFilePicker.from(activity)
             .addConfigBuilder()
             .selectMultipleFiles(false)
             .setRootDirectory(Environment.getExternalStorageDirectory().absolutePath)
@@ -53,13 +44,6 @@ object Common {
             .addItemDivider(true)
             .build()
             .forResult(Constants.REQ_UNICORN_FILE)
-    }
-
-    fun inflateView(
-        context: Context,
-        resId: Int
-    ): View {
-        return LayoutInflater.from(context).inflate(resId, null)
     }
 
     fun downloadBook(context: Context, book: BookModel) {
@@ -83,50 +67,67 @@ object Common {
         result: ListResult,
         onCompleted: (MutableList<BookModel>) -> Unit?
     ) {
+
         result.prefixes.forEach { folder ->
-            books.add(
-                BookModel(
-                    title = folder.name,
-                    path = folder.path,
-                    type = BookModel.Type.CATEGORY
-                )
+            val folderItem = BookModel(
+                title = folder.name,
+                path = folder.path,
+                type = BookModel.Type.CATEGORY
             )
+            books.add(folderItem)
         }
+
         result.items.forEach { file ->
             if (!file.name.endsWith(extConfig)) {
-                books.add(
-                    BookModel(
-                        title = file.name,
-                        downloadUrl = file.downloadUrl,
-                        type = BookModel.Type.BOOK
-                    )
+                val book = BookModel(
+                    title = file.name,
+                    downloadUrl = file.downloadUrl,
+                    metadata = file.metadata,
+                    type = BookModel.Type.BOOK
                 )
+                books.add(book)
             }
         }
         onCompleted(books)
     }
 
-    fun getBitmapFromPdf(file: File): Bitmap {
-        val renderer = PdfRenderer(
-            ParcelFileDescriptor.open(
-                file,
-                ParcelFileDescriptor.MODE_READ_ONLY
-            )
-        )
-        var bitmap: Bitmap? = null
-        val pageCount = renderer.pageCount
-        (0..1).forEach { i ->
-            val page = renderer.openPage(i)
-            val width: Int = context.resources.displayMetrics.densityDpi / 72 * page.width
-            val height: Int = context.resources.displayMetrics.densityDpi / 72 * page.height
-            bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-            bitmap?.let {
-                page.render(it, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-            }
-            page.close()
-        }
+    fun loadDataFromCategory(
+        books: MutableList<BookModel>,
+        storageReference: StorageReference,
+        category: String,
+        onCompleted: (MutableList<BookModel>) -> Unit?
+    ) {
 
-        return bitmap!!
+        storageReference.child(category)
+            .listAll()
+            .addOnCompleteListener {
+                if (it.isSuccessful) {
+                    it.result?.prefixes?.forEach { folder ->
+                        books.add(
+                            BookModel(
+                                title = folder.name,
+                                path = folder.path,
+                                childList = folder.listAll(),
+                                type = BookModel.Type.CATEGORY
+                            )
+                        )
+                    }
+                    it.result?.items?.forEach { file ->
+                        if (!file.name.endsWith(extConfig)) {
+                            books.add(
+                                BookModel(
+                                    title = file.name,
+                                    downloadUrl = file.downloadUrl,
+                                    metadata = file.metadata,
+                                    type = BookModel.Type.BOOK
+                                )
+                            )
+                        }
+                    }
+                }
+                onCompleted(books)
+            }
+
     }
 
 }

@@ -1,7 +1,6 @@
 package com.suleyman.tobooks.ui.activity.books
 
 import android.content.Intent
-import android.content.res.ColorStateList
 import android.net.Uri
 import android.os.Bundle
 import android.view.Gravity
@@ -21,10 +20,10 @@ import com.suleyman.tobooks.databinding.HeaderLayoutBinding
 import com.suleyman.tobooks.ui.fragment.audios.AudioBooksFragment
 import com.suleyman.tobooks.ui.fragment.books.BooksFragment
 import com.suleyman.tobooks.utils.FragmentTag
-import org.koin.android.ext.android.inject
-import org.koin.core.component.KoinApiExtension
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
-@KoinApiExtension
+@AndroidEntryPoint
 class BooksActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private var _binding: ActivityContainerBinding? = null
@@ -35,9 +34,9 @@ class BooksActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
     private lateinit var fragmentManager: FragmentManager
     private var backPressedListener: IBackPressed? = null
 
+    @Inject
+    lateinit var auth: FirebaseAuth
     private lateinit var toggle: ActionBarDrawerToggle
-
-    private val auth: FirebaseAuth by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,6 +79,22 @@ class BooksActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
             R.id.audios -> {
                 addFragment(AudioBooksFragment(), FragmentTag.AUDIOS.value())
             }
+
+            R.id.torgBooks -> {
+
+            }
+
+            R.id.settings -> {
+
+            }
+
+            R.id.help -> {
+                sendHelpMessage()
+            }
+
+            R.id.sign_out -> {
+                auth.signOut()
+            }
         }
         return true
     }
@@ -96,15 +111,19 @@ class BooksActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
                 auth.signOut()
             }
             R.id.sendHelpMessage -> {
-                val intent = Intent(Intent.ACTION_SENDTO)
-                intent.type = "text/plain"
-                intent.data = Uri.parse("mailto:${Common.APP_EMAIL}")
-                intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.subject_message))
-                intent.putExtra(Intent.EXTRA_TEXT, getString(R.string.text_message))
-                startActivity(Intent.createChooser(intent, getString(R.string.send_with)))
+                sendHelpMessage()
             }
         }
         return true
+    }
+
+    private fun sendHelpMessage() {
+        val intent = Intent(Intent.ACTION_SENDTO)
+        intent.type = "text/plain"
+        intent.data = Uri.parse("mailto:${Common.APP_EMAIL}")
+        intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.subject_message))
+        intent.putExtra(Intent.EXTRA_TEXT, getString(R.string.text_message))
+        startActivity(Intent.createChooser(intent, getString(R.string.send_with)))
     }
 
     private fun addFragment(fragment: Fragment, tag: String) {

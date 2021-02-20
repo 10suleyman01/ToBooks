@@ -5,12 +5,21 @@ import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import com.google.firebase.storage.ListResult
 import com.google.firebase.storage.StorageReference
+import com.suleyman.tobooks.R
 import com.suleyman.tobooks.utils.Common
+import com.suleyman.tobooks.utils.NetworkHelper
+import com.suleyman.tobooks.utils.Utils
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.io.File
+import javax.inject.Inject
 
-class BookCreateDirectoryViewModel : ViewModel() {
+@HiltViewModel
+class BookCreateDirectoryViewModel @Inject constructor(
+    val utils: Utils,
+    val networkHelper: NetworkHelper
+) : ViewModel() {
 
     private val _booksUiState = MutableStateFlow<CreateDirectoryState>(CreateDirectoryState.Empty)
     var bookUiState: StateFlow<CreateDirectoryState> = _booksUiState
@@ -25,29 +34,33 @@ class BookCreateDirectoryViewModel : ViewModel() {
                 File("${Environment.getExternalStorageDirectory().absolutePath}/manifest${Common.extConfig}")
             val isCreated = file.createNewFile()
             if (isCreated) {
-                storageReference.child(currentDirectory).child(name).child(file.name)
-                    .putFile(file.toUri())
-                    .addOnSuccessListener {
-                        file.delete()
-                    }
-                    .addOnProgressListener {
-                        _booksUiState.value = CreateDirectoryState.Loading(true)
-                    }
-                    .addOnCompleteListener {
-                        if (it.isSuccessful) {
-                            storageReference.child(currentDirectory)
-                                .listAll()
-                                .addOnCompleteListener { task ->
-                                    _booksUiState.value =
-                                        CreateDirectoryState.Success(task.result!!)
-                                    _booksUiState.value = CreateDirectoryState.Loading(false)
-                                }
+                if (networkHelper.isNetworkConnected()) {
+                    storageReference.child(currentDirectory).child(name).child(file.name)
+                        .putFile(file.toUri())
+                        .addOnSuccessListener {
+                            file.delete()
                         }
-                    }
-                    .addOnFailureListener {
-                        _booksUiState.value = CreateDirectoryState.Error(it.message!!)
-                    }
+                        .addOnProgressListener {
+                            _booksUiState.value = CreateDirectoryState.Loading(true)
+                        }
+                        .addOnCompleteListener {
+                            if (it.isSuccessful) {
+                                storageReference.child(currentDirectory)
+                                    .listAll()
+                                    .addOnCompleteListener { task ->
+                                        _booksUiState.value =
+                                            CreateDirectoryState.Success(task.result!!)
+                                        _booksUiState.value = CreateDirectoryState.Loading(false)
+                                    }
+                            }
+                        }
+                        .addOnFailureListener {
+                            _booksUiState.value = CreateDirectoryState.Error(it.message!!)
+                        }
 
+                } else {
+                    _booksUiState.value = CreateDirectoryState.Error(utils.getString(R.string.not_connected))
+                }
             }
         }
     }

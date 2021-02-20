@@ -6,15 +6,17 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.suleyman.tobooks.ui.activity.books.BooksActivity
-import com.suleyman.tobooks.ui.activity.login.LoginActivity
-import org.koin.android.ext.android.inject
-import org.koin.core.component.KoinApiExtension
+import com.suleyman.tobooks.ui.activity.splash.LoginSplashActivity
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
-@KoinApiExtension
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private var user: FirebaseUser? = null
-    private val auth: FirebaseAuth by inject()
+
+    @Inject
+    lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,7 +35,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun toLogin() {
-        val intent = Intent(this@MainActivity, LoginActivity::class.java)
+        val intent = Intent(this@MainActivity, LoginSplashActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         finish()

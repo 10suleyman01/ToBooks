@@ -1,17 +1,11 @@
 package com.suleyman.tobooks.app
 
 import android.app.Application
-import com.suleyman.tobooks.di.appModule
-import org.koin.android.ext.koin.androidContext
-import org.koin.android.ext.koin.androidLogger
-import org.koin.core.context.startKoin
+import dagger.hilt.android.HiltAndroidApp
 
+@HiltAndroidApp
 class ToBooksApp: Application() {
     override fun onCreate() {
         super.onCreate()
-        startKoin {
-            androidContext(applicationContext)
-            modules(listOf(appModule))
-        }
     }
 }

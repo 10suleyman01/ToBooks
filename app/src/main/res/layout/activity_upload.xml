@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/imgBook"
+        android:layout_width="150dp"
+        android:layout_height="200dp"
+        android:layout_marginTop="24dp"
+        android:background="@color/gray"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tInLayoutAuthor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:hint="@string/author_name"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/imgBook">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etAuthorName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tInLayoutBookName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:hint="@string/book_name"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tInLayoutAuthor">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etBookName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabUpload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:clickable="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@drawable/round_get_app_24" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabSelectImageBook"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        app:layout_constraintBottom_toBottomOf="@+id/imgBook"
+        app:layout_constraintEnd_toEndOf="@+id/imgBook"
+        app:layout_constraintStart_toEndOf="@+id/imgBook"
+        app:layout_constraintTop_toTopOf="@+id/imgBook"
+        app:srcCompat="@drawable/round_add_white_24dp" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvSelectedFile"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="8dp"
+        android:maxEms="18"
+        android:maxLines="1"
+        android:text="@string/set_upload_file"
+        app:layout_constraintBottom_toBottomOf="@+id/btnSelectFile"
+        app:layout_constraintEnd_toStartOf="@+id/btnSelectFile"
+        app:layout_constraintStart_toStartOf="@+id/tInLayoutBookName"
+        app:layout_constraintTop_toTopOf="@+id/btnSelectFile" />
+
+    <Button
+        android:id="@+id/btnSelectFile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/select"
+        app:layout_constraintEnd_toEndOf="@+id/tInLayoutBookName"
+        app:layout_constraintTop_toBottomOf="@+id/tInLayoutBookName" />
+
+    <ProgressBar
+        android:id="@+id/pbUploadLoading"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnSelectFile"
+        tools:visibility="visible" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

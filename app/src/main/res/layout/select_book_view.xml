@@ -10,17 +10,17 @@
         android:id="@+id/tvFilePath"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="16dp"
         android:layout_marginEnd="8dp"
+        android:hint="@string/set_upload_file"
         android:maxEms="18"
         android:maxLines="1"
-        android:textSize="12sp"
         android:padding="6dp"
+        android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/btnSelectBook"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:hint="@string/set_upload_file" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/btnSelectBook"

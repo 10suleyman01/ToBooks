@@ -16,7 +16,7 @@
     <string name="select_category">Выбрать категорию</string>
     <string name="enter_the_name">Введите имя папки</string>
     <string name="create_subcategory">Создать подкатегорию</string>
-    <string name="set_upload_file">Выберите книгу</string>
+    <string name="set_upload_file">Выберите файл</string>
     <string name="download">Скачать</string>
     <string name="select">Выбрать</string>
     <string name="create">Создать</string>
@@ -41,4 +41,15 @@
     <string name="more_requests_try_again_later">Слишком много запросов, попробуйте позже</string>
     <string name="sms_code_message">На Ваш номер отправлен код с потдверждением</string>
     <string name="sms">SMS-код</string>
+    <string name="market">Книжный рынок</string>
+    <string name="settings">Настройки</string>
+    <string name="title_activity_upload">UploadActivity</string>
+    <string name="not_connected">Нет подключения к сети!</string>
+    <string name="confirm_number">Подтверждение номера</string>
+    <string name="enter_the_code_from_sms">Введите код из sms</string>
+    <string name="confirm">Подтвердить</string>
+    <string name="book_name">Название</string>
+    <string name="author_name">Имя автора</string>
+    <string name="login_from_splash">Войти</string>
+    <string name="begin">Начать</string>
 </resources>

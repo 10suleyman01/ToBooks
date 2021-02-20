@@ -1,6 +1,5 @@
 package com.suleyman.tobooks.ui.activity.login
 
-import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
@@ -18,12 +17,11 @@ import com.suleyman.tobooks.utils.Utils
 import com.suleyman.tobooks.databinding.ActivitySmsCodeBinding
 import com.suleyman.tobooks.databinding.EnterEmailViewBinding
 import com.suleyman.tobooks.utils.textString
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
-import org.koin.android.ext.android.inject
-import org.koin.core.component.KoinApiExtension
+import javax.inject.Inject
 
-@KoinApiExtension
-@SuppressLint("NonConstantResourceId")
+@AndroidEntryPoint
 class LoginActivity : AppCompatActivity(), View.OnClickListener, TextWatcher {
 
     private var _binding: ActivityLoginBinding? = null
@@ -31,7 +29,8 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, TextWatcher {
 
     private val loginViewModel: LoginViewModel by viewModels()
 
-    private val utils: Utils by inject()
+    @Inject
+    lateinit var utils: Utils
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,11 +40,12 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, TextWatcher {
 
         setSupportActionBar(binding.includeLoginToolbar.toolbar)
 
-        binding.btnSignIn.setOnClickListener(this)
-        binding.btnSignUp.setOnClickListener(this)
-        binding.tvForgotPassword.setOnClickListener(this)
-
-        binding.etLogin.addTextChangedListener(this)
+        with (binding) {
+            btnSignIn.setOnClickListener(this@LoginActivity)
+            btnSignUp.setOnClickListener(this@LoginActivity)
+            tvForgotPassword.setOnClickListener(this@LoginActivity)
+            etLogin.addTextChangedListener(this@LoginActivity)
+        }
 
         lifecycleScope.launchWhenStarted {
             loginViewModel.loginUiState.collect {
@@ -64,11 +64,11 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, TextWatcher {
                         val verificationId = it.verificationId
                         showAlertDialog(
                             this@LoginActivity,
-                            title = "Подтверждение номера",
-                            message = "Введите код из sms",
-                            viewSmsCode.root
+                            title = getString(R.string.confirm_number),
+                            message = getString(R.string.enter_the_code_from_sms),
+                            view = viewSmsCode.root
                         ).setPositiveButton(
-                            "Подтвердить"
+                            getString(R.string.confirm)
                         ) { _, _ ->
 
                             val credential = PhoneAuthProvider.getCredential(
@@ -82,7 +82,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, TextWatcher {
 
                         }.show()
                     }
-                    else -> Unit
+                    else -> LoginViewModel.LoginUiState.Empty
                 }
             }
         }
@@ -93,8 +93,9 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, TextWatcher {
     }
 
     override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-        s?.let {
-            val isPhoneSign = !(it.isNotEmpty() && (it.isDigitsOnly() || it.startsWith("+")))
+        s?.let { number ->
+            val isPhoneSign =
+                !(number.isNotEmpty() && (number.isDigitsOnly() || number.startsWith("+")))
             binding.tInLayoutPassword.isVisible = isPhoneSign
             binding.btnSignUp.isVisible = isPhoneSign
         }

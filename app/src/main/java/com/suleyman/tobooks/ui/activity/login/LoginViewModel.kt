@@ -5,22 +5,23 @@ import androidx.lifecycle.ViewModel
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.*
 import com.suleyman.tobooks.R
+import com.suleyman.tobooks.utils.NetworkHelper
 import com.suleyman.tobooks.utils.Utils
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import org.koin.core.component.KoinApiExtension
-import org.koin.java.KoinJavaComponent.inject
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
-@Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
-@KoinApiExtension
-class LoginViewModel : ViewModel() {
+@HiltViewModel
+class LoginViewModel @Inject constructor(
+    val utils: Utils,
+    val networkHelper: NetworkHelper,
+    val auth: FirebaseAuth,
+) : ViewModel() {
 
     private val _loginUiState = MutableStateFlow<LoginUiState>(LoginUiState.Empty)
     var loginUiState: StateFlow<LoginUiState> = _loginUiState
-
-    private val utils: Utils by inject(Utils::class.java)
-    private val auth: FirebaseAuth by inject(FirebaseAuth::class.java)
 
     init {
         auth.useAppLanguage()
@@ -30,16 +31,21 @@ class LoginViewModel : ViewModel() {
         if (login.isNotEmpty()) {
             if (login.contains("@") && password.isNotEmpty()) {
                 _loginUiState.value = LoginUiState.Loading(true)
-                auth.signInWithEmailAndPassword(login, password)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            _loginUiState.value =
-                                LoginUiState.Success(utils.getString(R.string.sign_in_successful))
-                        } else {
-                            _loginUiState.value =
-                                LoginUiState.Error(utils.getString(R.string.sign_in_error))
+                if (networkHelper.isNetworkConnected()) {
+                    auth.signInWithEmailAndPassword(login, password)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                _loginUiState.value =
+                                    LoginUiState.Success(utils.getString(R.string.sign_in_successful))
+                            } else {
+                                _loginUiState.value =
+                                    LoginUiState.Error(utils.getString(R.string.sign_in_error))
+                            }
                         }
-                    }
+                } else {
+                    _loginUiState.value =
+                        LoginUiState.Error(utils.getString(R.string.not_connected))
+                }
             } else if (login.substring(1).isDigitsOnly()) {
                 if (login.startsWith("+")) {
                     verifyNumber(login, activity)
@@ -77,31 +83,41 @@ class LoginViewModel : ViewModel() {
 
     private fun verifyNumber(login: String, activity: LoginActivity) {
         _loginUiState.value = LoginUiState.Loading(true)
-        PhoneAuthProvider.verifyPhoneNumber(
-            PhoneAuthOptions.newBuilder(auth)
-                .setPhoneNumber(login)
-                .setTimeout(60L, TimeUnit.SECONDS)
-                .setActivity(activity)
-                .setCallbacks(callbacks())
-                .build()
-        )
+        if (networkHelper.isNetworkConnected()) {
+            PhoneAuthProvider.verifyPhoneNumber(
+                PhoneAuthOptions.newBuilder(auth)
+                    .setPhoneNumber(login)
+                    .setTimeout(60L, TimeUnit.SECONDS)
+                    .setActivity(activity)
+                    .setCallbacks(callbacks())
+                    .build()
+            )
+        } else {
+            _loginUiState.value =
+                LoginUiState.Error(utils.getString(R.string.not_connected))
+        }
     }
 
     fun signWithPhoneCredentials(credential: PhoneAuthCredential) {
         _loginUiState.value = LoginUiState.Loading(true)
-        auth.signInWithCredential(credential)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val user = task.result?.user
-                    _loginUiState.value =
-                        LoginUiState.Success(utils.getString(R.string.sign_in_successful))
-                } else {
-                    if (task.exception is FirebaseAuthInvalidCredentialsException) {
+        if (networkHelper.isNetworkConnected()) {
+            auth.signInWithCredential(credential)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        val user = task.result?.user
                         _loginUiState.value =
-                            LoginUiState.Error(utils.getString(R.string.sign_in_error))
+                            LoginUiState.Success(utils.getString(R.string.sign_in_successful))
+                    } else {
+                        if (task.exception is FirebaseAuthInvalidCredentialsException) {
+                            _loginUiState.value =
+                                LoginUiState.Error(utils.getString(R.string.sign_in_error))
+                        }
                     }
                 }
-            }
+        } else {
+            _loginUiState.value =
+                LoginUiState.Error(utils.getString(R.string.not_connected))
+        }
     }
 
     fun signUp(login: String, password: String) {
@@ -114,34 +130,44 @@ class LoginViewModel : ViewModel() {
 
     private fun registerWithEmail(login: String, password: String) {
         _loginUiState.value = LoginUiState.Loading(true)
-        auth.createUserWithEmailAndPassword(login, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    _loginUiState.value = LoginUiState.Loading(false)
-                    _loginUiState.value =
-                        LoginUiState.Success(utils.getString(R.string.sign_up_successful))
-                    _loginUiState.value = LoginUiState.Loading(false)
-                } else {
-                    _loginUiState.value = LoginUiState.Loading(false)
-                    _loginUiState.value =
-                        LoginUiState.Error(utils.getString(R.string.sign_up_error))
+        if (networkHelper.isNetworkConnected()) {
+            auth.createUserWithEmailAndPassword(login, password)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        _loginUiState.value = LoginUiState.Loading(false)
+                        _loginUiState.value =
+                            LoginUiState.Success(utils.getString(R.string.sign_up_successful))
+                        _loginUiState.value = LoginUiState.Loading(false)
+                    } else {
+                        _loginUiState.value = LoginUiState.Loading(false)
+                        _loginUiState.value =
+                            LoginUiState.Error(utils.getString(R.string.sign_up_error))
+                    }
                 }
-            }
+        } else {
+            _loginUiState.value =
+                LoginUiState.Error(utils.getString(R.string.not_connected))
+        }
     }
 
     fun resetPassword(login: String) {
         if (login.isNotEmpty()) {
             _loginUiState.value = LoginUiState.Loading(true)
-            auth.sendPasswordResetEmail(login)
-                .addOnSuccessListener {
-                    _loginUiState.value =
-                        LoginUiState.Success(utils.getString(R.string.send_link_to_your_mail))
-                    _loginUiState.value = LoginUiState.Loading(false)
-                }.addOnFailureListener {
-                    _loginUiState.value =
-                        LoginUiState.Error(utils.getString(R.string.enter_correct_email))
-                    _loginUiState.value = LoginUiState.Loading(false)
-                }
+            if (networkHelper.isNetworkConnected()) {
+                auth.sendPasswordResetEmail(login)
+                    .addOnSuccessListener {
+                        _loginUiState.value =
+                            LoginUiState.Success(utils.getString(R.string.send_link_to_your_mail))
+                        _loginUiState.value = LoginUiState.Loading(false)
+                    }.addOnFailureListener {
+                        _loginUiState.value =
+                            LoginUiState.Error(utils.getString(R.string.enter_correct_email))
+                        _loginUiState.value = LoginUiState.Loading(false)
+                    }
+            } else {
+                _loginUiState.value =
+                    LoginUiState.Error(utils.getString(R.string.not_connected))
+            }
         }
     }
 
