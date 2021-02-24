@@ -6,11 +6,13 @@ import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
 import com.suleyman.tobooks.databinding.ActivityUploadBinding
 import com.suleyman.tobooks.ui.fragment.books.BooksFragment
 import com.suleyman.tobooks.utils.Common
@@ -67,7 +69,9 @@ class UploadFileActivity : AppCompatActivity(), EasyPermissions.PermissionCallba
 
                 val imageBytes = utils.fromBitmap(imgBook.drawable.toBitmap())
 
+                Log.d(TAG, "onCreate: imgBytes = ${imageBytes.contentToString().length}")
                 val base64 = Base64.encodeToString(imageBytes, Base64.DEFAULT)
+                Log.d(TAG, "onCreate: base64 = ${base64.length}")
 
                 val data = hashMapOf(
                     FirestoreConfig.NAME to bookName,
@@ -75,39 +79,45 @@ class UploadFileActivity : AppCompatActivity(), EasyPermissions.PermissionCallba
                     FirestoreConfig.PHOTO to base64
                 )
 
-                if (bookName.isNotEmpty() && bookAuthor.isNotEmpty() && isSelectedImage) {
-                    uploadFile?.let { file ->
-                        uploadFileViewModel.uploadFile(
-                            category = category,
-                            file = file,
-                            data
-                        )
-                    }
-                    lifecycleScope.launchWhenStarted {
+                if (base64.length > 1_048_487) {
+                    utils.toastLong("Выберите изображение низкого разрешения!")
+                } else {
+                    if (bookName.isNotEmpty() && bookAuthor.isNotEmpty() && isSelectedImage) {
 
-                        uploadFileViewModel.uploadState.collect {
-                            when (it) {
-                                is UploadFileViewModel.UploadState.Success -> {
-                                    isSelectedImage = false
-                                    pbUploadLoading.isVisible = false
-                                    val data = Intent()
-                                    data.putExtra(BooksFragment.EXTRA_CATEGORY, category)
-                                    setResult(RESULT_OK, data)
-                                    finish()
-                                }
-                                is UploadFileViewModel.UploadState.Progress -> {
-
-                                }
-                                is UploadFileViewModel.UploadState.Loading -> {
-                                    pbUploadLoading.isVisible = true
-                                }
-                                is UploadFileViewModel.UploadState.Error -> {
-                                    pbUploadLoading.isVisible = false
-                                }
-                                else -> UploadFileViewModel.UploadState.Empty
-                            }
+                        uploadFile?.let { file ->
+                            uploadFileViewModel.uploadFile(
+                                category = category,
+                                file = file,
+                                data,
+                            )
                         }
+                        lifecycleScope.launchWhenStarted {
 
+                            uploadFileViewModel.uploadState.collect {
+                                when (it) {
+                                    is UploadFileViewModel.UploadState.Success -> {
+                                        isSelectedImage = false
+                                        pbUploadLoading.isVisible = false
+                                        val data = Intent()
+                                        data.putExtra(BooksFragment.EXTRA_CATEGORY, category)
+                                        setResult(RESULT_OK, data)
+                                        finish()
+                                    }
+                                    is UploadFileViewModel.UploadState.Progress -> {
+
+                                    }
+                                    is UploadFileViewModel.UploadState.Loading -> {
+                                        pbUploadLoading.isVisible = true
+                                    }
+                                    is UploadFileViewModel.UploadState.Error -> {
+                                        pbUploadLoading.isVisible = false
+                                        Log.d(TAG, "onCreate: ${it.message}")
+                                    }
+                                    else -> UploadFileViewModel.UploadState.Empty
+                                }
+                            }
+
+                        }
                     }
                 }
             }
@@ -165,8 +175,10 @@ class UploadFileActivity : AppCompatActivity(), EasyPermissions.PermissionCallba
             } else if (requestCode == REQUEST_GET_IMAGE) {
                 val uri = data.data
                 val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)
-                val drawable = BitmapDrawable(resources, bitmap)
-                binding.imgBook.setImageDrawable(drawable)
+                Glide.with(this)
+                    .load(bitmap)
+                    .fitCenter()
+                    .into(binding.imgBook)
                 isSelectedImage = true
             }
         } else super.onActivityResult(requestCode, resultCode, data)

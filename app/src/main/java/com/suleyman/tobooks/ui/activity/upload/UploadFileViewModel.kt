@@ -2,6 +2,7 @@ package com.suleyman.tobooks.ui.activity.upload
 
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.StorageReference
 import com.suleyman.tobooks.R
@@ -20,7 +21,8 @@ class UploadFileViewModel @Inject constructor(
     val utils: Utils,
     val networkHelper: NetworkHelper,
     val firestore: FirebaseFirestore,
-    val storageReference: StorageReference
+    val storageReference: StorageReference,
+    val databaseReference: DatabaseReference
 ) : ViewModel() {
 
     private val _uploadState = MutableStateFlow<UploadState>(UploadState.Empty)
@@ -29,7 +31,7 @@ class UploadFileViewModel @Inject constructor(
     fun uploadFile(
         category: String,
         file: File,
-        data: HashMap<String, String>
+        data: HashMap<String, String>,
     ) {
         if (networkHelper.isNetworkConnected()) {
             storageReference.child(category).child(data["name"] ?: "")
@@ -46,16 +48,14 @@ class UploadFileViewModel @Inject constructor(
                 }
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-
                         firestore.collection(FirestoreConfig.COLLECTION)
                             .document(data[FirestoreConfig.NAME] ?: "")
                             .set(data)
                             .addOnSuccessListener {
-                                utils.toast("Success")
                                 _uploadState.value = UploadState.Success
                             }
                             .addOnFailureListener {
-                                utils.toastLong("Error ${it.localizedMessage}")
+                                it.printStackTrace()
                             }
                     }
                 }

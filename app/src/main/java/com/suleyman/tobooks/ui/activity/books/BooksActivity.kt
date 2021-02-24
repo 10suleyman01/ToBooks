@@ -76,14 +76,6 @@ class BooksActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
                 addFragment(BooksFragment(), FragmentTag.BOOKS.value())
             }
 
-            R.id.audios -> {
-                addFragment(AudioBooksFragment(), FragmentTag.AUDIOS.value())
-            }
-
-            R.id.torgBooks -> {
-
-            }
-
             R.id.settings -> {
 
             }

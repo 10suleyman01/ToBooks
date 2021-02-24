@@ -18,10 +18,6 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var auth: FirebaseAuth
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     override fun onStart() {
         super.onStart()
         auth.addAuthStateListener {

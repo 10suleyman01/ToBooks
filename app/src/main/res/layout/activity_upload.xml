@@ -64,7 +64,7 @@
         android:clickable="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/round_get_app_24" />
+        app:srcCompat="@drawable/ic_baseline_done_24" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabSelectImageBook"
@@ -75,7 +75,7 @@
         app:layout_constraintEnd_toEndOf="@+id/imgBook"
         app:layout_constraintStart_toEndOf="@+id/imgBook"
         app:layout_constraintTop_toTopOf="@+id/imgBook"
-        app:srcCompat="@drawable/round_add_white_24dp" />
+        app:srcCompat="@drawable/ic_baseline_add_a_photo_24" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvSelectedFile"
@@ -84,8 +84,8 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="8dp"
         android:maxEms="18"
-        android:maxLines="1"
         android:text="@string/set_upload_file"
+        app:layout_constrainedWidth="true"
         app:layout_constraintBottom_toBottomOf="@+id/btnSelectFile"
         app:layout_constraintEnd_toStartOf="@+id/btnSelectFile"
         app:layout_constraintStart_toStartOf="@+id/tInLayoutBookName"

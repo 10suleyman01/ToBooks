@@ -4,9 +4,7 @@ import android.net.Uri
 import com.google.android.gms.tasks.Task
 import com.google.firebase.storage.ListResult
 import com.google.firebase.storage.StorageMetadata
-import me.aflak.filter_annotation.Filterable
 
-@Filterable
 data class BookModel(
     val title: String? = null,
     val downloadUrl: Task<Uri>? = null,

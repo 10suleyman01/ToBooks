@@ -2,7 +2,6 @@ package com.suleyman.tobooks.ui.fragment.books
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.drawable.BitmapDrawable
 import android.util.Base64
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -10,13 +9,14 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.request.RequestOptions
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.suleyman.tobooks.R
 import com.suleyman.tobooks.databinding.BookItemBinding
 import com.suleyman.tobooks.databinding.FolderItemBinding
 import com.suleyman.tobooks.utils.Common
 import com.suleyman.tobooks.model.BookModel
+import com.suleyman.tobooks.utils.Common.GENRES
 import com.suleyman.tobooks.utils.FirestoreConfig
 import com.suleyman.tobooks.utils.Utils
 import javax.inject.Inject
@@ -27,7 +27,8 @@ import javax.inject.Singleton
 class BooksAdapter @Inject constructor(
     val context: Context,
     val utils: Utils,
-    val firestore: FirebaseFirestore
+    val firestore: FirebaseFirestore,
+    val databaseReference: DatabaseReference
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
 
@@ -48,10 +49,6 @@ class BooksAdapter @Inject constructor(
     fun clearWithNotify() {
         bookList.clear()
         notifyDataSetChanged()
-    }
-
-    fun clear() {
-        this.bookList.clear()
     }
 
     fun addListener(listener: OnClickListener) {
@@ -103,24 +100,27 @@ class BooksAdapter @Inject constructor(
         fun bindBookView(book: BookModel) {
             with(itemViewBinding) {
 
+                tvBookTitle.text = "..."
+                tvBookAuthor.text = "..."
+                bookImage.setImageBitmap(null)
+
                 firestore.collection(FirestoreConfig.COLLECTION)
                     .document(book.title!!)
                     .get()
                     .addOnSuccessListener { document ->
                         tvBookTitle.text = document[FirestoreConfig.NAME].toString()
                         tvBookAuthor.text = document[FirestoreConfig.AUTHOR].toString()
+
                         val bytes = Base64.decode(
                             document[FirestoreConfig.PHOTO].toString(),
                             Base64.DEFAULT
                         )
+
                         val bmp = utils.toBitmap(bytes)
-                        val drawable = BitmapDrawable(context.resources, bmp)
                         Glide.with(context)
-                            .load(drawable)
-                            .apply(RequestOptions.overrideOf(1000, 1000))
+                            .load(bmp)
                             .diskCacheStrategy(DiskCacheStrategy.NONE)
                             .into(bookImage)
-
                     }
 
                 btnDownloadBook.setImageResource(R.drawable.round_get_app_24)
@@ -143,15 +143,16 @@ class BooksAdapter @Inject constructor(
 
             with(itemViewBinding) {
                 tvFolderTitle.text = book.title
-                tvChildListSize.isVisible = false
-
-//                book.childList?.addOnCompleteListener {
-//                    if (it.isSuccessful) {
-//                        tvChildListSize.text = "${it.result?.items?.size ?:
-//                        it.result?.prefixes?.size ?: "" }"
+                book.title?.let {
+//                    val icon = getIconOfCategory(it)
+                    categoryIcon.isVisible = false
+//                    else {
+//                        categoryIcon.isVisible = true
+//                        categoryIcon.setBackgroundResource(icon)
 //                    }
-//                }
+                }
             }
+
 
             if (listeners.size > 0)
                 listeners.forEach { listener ->
@@ -160,6 +161,16 @@ class BooksAdapter @Inject constructor(
                     }
                 }
         }
+    }
+
+    private fun getIconOfCategory(title: String): Int {
+        when (title) {
+            GENRES[0] -> R.drawable.business
+            GENRES[25] -> R.drawable.sports
+            GENRES[GENRES.lastIndex] -> R.drawable.humor
+            else -> 0
+        }
+        return 0
     }
 
     interface OnClickListener {

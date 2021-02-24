@@ -1,6 +1,7 @@
 package com.suleyman.tobooks.di
 
 import android.content.Context
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.suleyman.tobooks.ui.fragment.books.BooksAdapter
 import com.suleyman.tobooks.utils.NetworkHelper
@@ -30,7 +31,8 @@ object AppModule {
     fun provideAdapter(
         @ApplicationContext context: Context,
         utils: Utils,
-        firestore: FirebaseFirestore
-    ) = BooksAdapter(context, utils, firestore)
+        firestore: FirebaseFirestore,
+        databaseReference: DatabaseReference
+    ) = BooksAdapter(context, utils, firestore, databaseReference)
 
 }

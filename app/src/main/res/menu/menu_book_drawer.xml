@@ -10,16 +10,6 @@
             android:checked="true"
             android:icon="@drawable/round_menu_book_black_24dp"/>
 
-        <item
-            android:id="@+id/audios"
-            android:title="@string/audio_books"
-            android:icon="@drawable/round_library_music_black_24dp"/>
-
-        <item
-            android:id="@+id/torgBooks"
-            android:title="@string/market"
-            android:icon="@drawable/baseline_attach_money_black_24dp"/>
-
     </group>
 
 

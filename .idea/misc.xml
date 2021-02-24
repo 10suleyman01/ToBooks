@@ -6,12 +6,13 @@
         <entry key="..\:/Users/tanko/AndroidStudioProjects/ToBooks/app/src/main/res/drawable/bg_btn_login.xml" value="0.15555555555555556" />
         <entry key="..\:/Users/tanko/AndroidStudioProjects/ToBooks/app/src/main/res/drawable/bg_edit_text_login.xml" value="0.15555555555555556" />
         <entry key="..\:/Users/tanko/AndroidStudioProjects/ToBooks/app/src/main/res/drawable/btn_login_splash.xml" value="0.21296296296296297" />
+        <entry key="..\:/Users/tanko/AndroidStudioProjects/ToBooks/app/src/main/res/drawable/ic_army.xml" value="0.2100456621004566" />
         <entry key="..\:/Users/tanko/AndroidStudioProjects/ToBooks/app/src/main/res/drawable/round_get_app_24.xml" value="0.21296296296296297" />
         <entry key="..\:/Users/tanko/AndroidStudioProjects/ToBooks/app/src/main/res/layout/activity_login.xml" value="0.33" />
         <entry key="..\:/Users/tanko/AndroidStudioProjects/ToBooks/app/src/main/res/layout/activity_login_splash.xml" value="0.2" />
         <entry key="..\:/Users/tanko/AndroidStudioProjects/ToBooks/app/src/main/res/layout/activity_upload.xml" value="0.1986111111111111" />
         <entry key="..\:/Users/tanko/AndroidStudioProjects/ToBooks/app/src/main/res/layout/book_item.xml" value="0.33" />
-        <entry key="..\:/Users/tanko/AndroidStudioProjects/ToBooks/app/src/main/res/layout/folder_item.xml" value="0.5" />
+        <entry key="..\:/Users/tanko/AndroidStudioProjects/ToBooks/app/src/main/res/layout/folder_item.xml" value="0.33" />
       </map>
     </option>
   </component>
