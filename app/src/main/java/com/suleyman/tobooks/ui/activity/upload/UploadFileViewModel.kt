@@ -70,7 +70,6 @@ class UploadFileViewModel @Inject constructor(
         data class Progress(val progress: Int) : UploadState()
         object Loading : UploadState()
         object Empty : UploadState()
-
     }
 
 }

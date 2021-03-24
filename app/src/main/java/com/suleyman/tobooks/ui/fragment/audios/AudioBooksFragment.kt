@@ -16,7 +16,7 @@ class AudioBooksFragment: Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
         _binding = FragmentAudioBooksBinding.inflate(inflater, container, false)
 

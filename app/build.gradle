@@ -7,6 +7,14 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        debug {
+            storeFile file('C:\\Users\\tanko\\key_store.jks')
+            storePassword 'arions'
+            keyAlias 'key_store'
+            keyPassword 'arions'
+        }
+    }
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
 
@@ -14,16 +22,17 @@ android {
         applicationId "com.suleyman.tobooks"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 1
-        versionName '1.0.2'
+        versionCode 3
+        versionName '1.1'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            signingConfig signingConfigs.debug
         }
     }
     compileOptions {

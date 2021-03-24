@@ -1,0 +1,19 @@
+{
+  "version": 3,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "com.suleyman.tobooks",
+  "variantName": "release",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "versionCode": 3,
+      "versionName": "1.1",
+      "outputFile": "app-release.apk"
+    }
+  ],
+  "elementType": "File"
+}

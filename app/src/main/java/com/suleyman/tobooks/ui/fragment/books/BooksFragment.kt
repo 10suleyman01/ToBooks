@@ -27,6 +27,7 @@ import com.suleyman.tobooks.ui.activity.upload.UploadFileActivity
 import com.suleyman.tobooks.ui.activity.upload.UploadFileViewModel
 import com.suleyman.tobooks.ui.fragment.books.viewmodel.BookCreateDirectoryViewModel
 import com.suleyman.tobooks.ui.fragment.books.viewmodel.BookLoadDirectoriesViewModel
+import com.suleyman.tobooks.utils.Common.rotate
 import com.suleyman.tobooks.utils.StorageWalker
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
@@ -104,10 +105,10 @@ class BooksFragment : Fragment(), IBackPressed, SearchView.OnQueryTextListener {
             binding.fabAddNewFile.animate().translationY(-resources.getDimension(R.dimen.mg65dp))
             binding.fabAddNewCategory.animate()
                 .translationY(-resources.getDimension(R.dimen.mg130dp))
-            rotate(135.0f)
+            rotate(binding.fabOpenActions, 135.0f)
         } else {
             isFabOpenActions = false
-            rotate(0f)
+            rotate(binding.fabOpenActions, 0f)
             binding.fabAddNewFile.animate().translationY(0f)
             binding.fabAddNewCategory.animate().translationY(0f)
         }
@@ -204,15 +205,6 @@ class BooksFragment : Fragment(), IBackPressed, SearchView.OnQueryTextListener {
         if (withClear)
             rvAdapter.clearWithNotify()
         binding.progressBarBooks.isVisible = isShow
-    }
-
-    private fun rotate(value: Float) {
-        ViewCompat.animate(binding.fabOpenActions)
-            .rotation(value)
-            .withLayer()
-            .setDuration(300L)
-            .setInterpolator(OvershootInterpolator(10.0f))
-            .start()
     }
 
     override fun onCreateView(
@@ -334,6 +326,6 @@ class BooksFragment : Fragment(), IBackPressed, SearchView.OnQueryTextListener {
         isFabOpenActions = false
         binding.fabAddNewFile.animate().translationY(0f)
         binding.fabAddNewCategory.animate().translationY(0f)
-        rotate(0f)
+        rotate(binding.fabOpenActions, 0f)
     }
 }

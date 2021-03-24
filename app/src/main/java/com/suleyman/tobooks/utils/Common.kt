@@ -8,6 +8,8 @@ import android.content.Context
 import android.os.Environment
 import android.util.Log
 import android.view.View
+import android.view.animation.OvershootInterpolator
+import androidx.core.view.ViewCompat
 import com.google.firebase.storage.ListResult
 import com.suleyman.tobooks.R
 import com.suleyman.tobooks.model.BookModel
@@ -175,6 +177,15 @@ object Common {
                 onCompleted(books)
             }
 
+    }
+
+     fun rotate(view: View, value: Float) {
+        ViewCompat.animate(view)
+            .rotation(value)
+            .withLayer()
+            .setDuration(300L)
+            .setInterpolator(OvershootInterpolator(10.0f))
+            .start()
     }
 
 }

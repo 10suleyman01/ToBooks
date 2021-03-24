@@ -17,7 +17,6 @@ import com.suleyman.tobooks.utils.Common
 import com.suleyman.tobooks.utils.IBackPressed
 import com.suleyman.tobooks.databinding.ActivityContainerBinding
 import com.suleyman.tobooks.databinding.HeaderLayoutBinding
-import com.suleyman.tobooks.ui.fragment.audios.AudioBooksFragment
 import com.suleyman.tobooks.ui.fragment.books.BooksFragment
 import com.suleyman.tobooks.utils.FragmentTag
 import dagger.hilt.android.AndroidEntryPoint
@@ -74,10 +73,6 @@ class BooksActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         when(item.itemId) {
             R.id.books -> {
                 addFragment(BooksFragment(), FragmentTag.BOOKS.value())
-            }
-
-            R.id.settings -> {
-
             }
 
             R.id.help -> {

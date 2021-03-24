@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="244dp"
+        android:layout_height="194dp"
+        app:layout_constraintBottom_toTopOf="@+id/tvAboutHelpText"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.496"
+        app:srcCompat="@drawable/donate2" />
+
+    <TextView
+        android:id="@+id/tvAboutHelpText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Помочь продвижению проекта\nСбербанк:"
+        android:textAllCaps="true"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.604" />
+
+    <TextView
+        android:id="@+id/tvNumber"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="89120937198"
+        android:textAllCaps="true"
+        android:textIsSelectable="true"
+        android:focusable="true"
+        android:enabled="true"
+        android:longClickable="true"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+        android:textColor="@color/primary"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="@+id/tvAboutHelpText"
+        app:layout_constraintEnd_toEndOf="@+id/tvAboutHelpText"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/tvAboutHelpText" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -2,7 +2,6 @@ package com.suleyman.tobooks.ui.activity.upload
 
 import abhishekti7.unicorn.filepicker.utils.Constants
 import android.content.Intent
-import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
@@ -68,10 +67,7 @@ class UploadFileActivity : AppCompatActivity(), EasyPermissions.PermissionCallba
                 val bookAuthor = etAuthorName.textString()
 
                 val imageBytes = utils.fromBitmap(imgBook.drawable.toBitmap())
-
-                Log.d(TAG, "onCreate: imgBytes = ${imageBytes.contentToString().length}")
                 val base64 = Base64.encodeToString(imageBytes, Base64.DEFAULT)
-                Log.d(TAG, "onCreate: base64 = ${base64.length}")
 
                 val data = hashMapOf(
                     FirestoreConfig.NAME to bookName,
@@ -79,45 +75,42 @@ class UploadFileActivity : AppCompatActivity(), EasyPermissions.PermissionCallba
                     FirestoreConfig.PHOTO to base64
                 )
 
-                if (base64.length > 1_048_487) {
-                    utils.toastLong("Выберите изображение низкого разрешения!")
-                } else {
-                    if (bookName.isNotEmpty() && bookAuthor.isNotEmpty() && isSelectedImage) {
+                if (bookName.isNotEmpty() && bookAuthor.isNotEmpty() && isSelectedImage) {
 
-                        uploadFile?.let { file ->
-                            uploadFileViewModel.uploadFile(
-                                category = category,
-                                file = file,
-                                data,
-                            )
-                        }
-                        lifecycleScope.launchWhenStarted {
+                    uploadFile?.let { file ->
+                        uploadFileViewModel.uploadFile(
+                            category = category,
+                            file = file,
+                            data,
+                        )
+                    }
 
-                            uploadFileViewModel.uploadState.collect {
-                                when (it) {
-                                    is UploadFileViewModel.UploadState.Success -> {
-                                        isSelectedImage = false
-                                        pbUploadLoading.isVisible = false
-                                        val data = Intent()
-                                        data.putExtra(BooksFragment.EXTRA_CATEGORY, category)
-                                        setResult(RESULT_OK, data)
-                                        finish()
-                                    }
-                                    is UploadFileViewModel.UploadState.Progress -> {
+                    lifecycleScope.launchWhenStarted {
 
-                                    }
-                                    is UploadFileViewModel.UploadState.Loading -> {
-                                        pbUploadLoading.isVisible = true
-                                    }
-                                    is UploadFileViewModel.UploadState.Error -> {
-                                        pbUploadLoading.isVisible = false
-                                        Log.d(TAG, "onCreate: ${it.message}")
-                                    }
-                                    else -> UploadFileViewModel.UploadState.Empty
+                        uploadFileViewModel.uploadState.collect {
+                            when (it) {
+                                is UploadFileViewModel.UploadState.Success -> {
+                                    isSelectedImage = false
+                                    pbUploadLoading.isVisible = false
+                                    val data = Intent()
+                                    data.putExtra(BooksFragment.EXTRA_CATEGORY, category)
+                                    setResult(RESULT_OK, data)
+                                    finish()
                                 }
-                            }
+                                is UploadFileViewModel.UploadState.Progress -> {
 
+                                }
+                                is UploadFileViewModel.UploadState.Loading -> {
+                                    pbUploadLoading.isVisible = true
+                                }
+                                is UploadFileViewModel.UploadState.Error -> {
+                                    pbUploadLoading.isVisible = false
+                                    Log.d(TAG, "onCreate: ${it.message}")
+                                }
+                                else -> UploadFileViewModel.UploadState.Empty
+                            }
                         }
+
                     }
                 }
             }
