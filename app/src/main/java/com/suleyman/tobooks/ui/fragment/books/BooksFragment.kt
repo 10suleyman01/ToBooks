@@ -267,6 +267,9 @@ class BooksFragment : Fragment(), IBackPressed, SearchView.OnQueryTextListener {
 
     override fun onQueryTextChange(newText: String?): Boolean {
         newText?.let {
+            storage.find(newText){
+
+            }
             if (newText.isNotEmpty()) {
                 books.filter { book -> isBookTitleContainsIsNewText(book.title!!, newText) }
                     .apply {
