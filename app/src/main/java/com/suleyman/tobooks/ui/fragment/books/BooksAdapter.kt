@@ -9,26 +9,26 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.google.firebase.database.DatabaseReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.suleyman.tobooks.R
 import com.suleyman.tobooks.databinding.BookItemBinding
 import com.suleyman.tobooks.databinding.FolderItemBinding
-import com.suleyman.tobooks.utils.Common
 import com.suleyman.tobooks.model.BookModel
+import com.suleyman.tobooks.utils.Common
 import com.suleyman.tobooks.utils.Common.GENRES
 import com.suleyman.tobooks.utils.FirestoreConfig
 import com.suleyman.tobooks.utils.Utils
+import pub.devrel.easypermissions.EasyPermissions
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @SuppressLint("NotifyDataSetChanged")
 @Singleton
 class BooksAdapter @Inject constructor(
+    val fragment: BooksFragment,
     val context: Context,
     val utils: Utils,
     val firestore: FirebaseFirestore,
-    val databaseReference: DatabaseReference
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
 
@@ -125,7 +125,16 @@ class BooksAdapter @Inject constructor(
 
                 btnDownloadBook.setImageResource(R.drawable.round_get_app_24)
                 btnDownloadBook.setOnClickListener {
-                    Common.downloadBook(this@BooksAdapter.context, book)
+                    if (EasyPermissions.hasPermissions(context, *BooksFragment.PERMISSIONS)) {
+                        Common.downloadBook(this@BooksAdapter.context, book)
+                    } else {
+                        EasyPermissions.requestPermissions(
+                            fragment,
+                            "Дайте приложению доступ к памяти, чтобы загружать книги",
+                            BooksFragment.REQUEST_CHECK_PERMISSIONS,
+                            *BooksFragment.PERMISSIONS
+                        )
+                    }
                 }
             }
             if (listeners.size > 0)
@@ -136,6 +145,7 @@ class BooksAdapter @Inject constructor(
                 }
         }
     }
+
 
     private inner class FolderHolder(private val itemViewBinding: FolderItemBinding) :
         RecyclerView.ViewHolder(itemViewBinding.root) {
@@ -168,7 +178,6 @@ class BooksAdapter @Inject constructor(
             GENRES[0] -> R.drawable.business
             GENRES[25] -> R.drawable.sports
             GENRES[GENRES.lastIndex] -> R.drawable.humor
-            else -> 0
         }
         return 0
     }

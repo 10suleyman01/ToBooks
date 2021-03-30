@@ -1,10 +1,8 @@
 package com.suleyman.tobooks.utils
 
-import android.util.Log
 import com.google.firebase.storage.ListResult
 import com.google.firebase.storage.StorageReference
 import com.suleyman.tobooks.R
-import com.suleyman.tobooks.model.BookModel
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,15 +15,18 @@ class StorageWalker @Inject constructor(
     private var paths = mutableListOf<String>()
     private var isRoot = true
 
-    fun goTo(category: String, onSuccess: (ListResult) -> Unit) {
+    fun goTo(bucket: String? = "", category: String, onSuccess: (ListResult) -> Unit) {
         paths.add(category)
         setIsRoot(false)
-        storageReference.child(category)
-            .listAll()
-            .addOnSuccessListener(onSuccess)
+        storageReference.child(category).listAll().addOnSuccessListener(onSuccess)
     }
 
-    fun backTo(onSuccess: (ListResult) -> Unit) {
+    fun backTo(bucket: String? = "", onSuccess: (ListResult) -> Unit) {
+        val storage = bucket?.let {
+            if (it.isEmpty()) storageReference
+            else storageReference.child(bucket)
+        }
+
         if (paths.isNotEmpty() && paths.size > 1) {
             paths.removeLast()
             val lastCategory = paths.last()
@@ -35,7 +36,7 @@ class StorageWalker @Inject constructor(
         } else if (!isRoot && paths.size == 1) {
             paths.removeLast()
             setIsRoot(true)
-            storageReference.listAll().addOnSuccessListener(onSuccess)
+            storage?.listAll()?.addOnSuccessListener(onSuccess)
         }
     }
 
@@ -49,31 +50,23 @@ class StorageWalker @Inject constructor(
         return currentPath().substring(lastIndex + 1)
     }
 
-    fun backToCurrent(onSuccess: (ListResult) -> Unit) {
-        if (pathsIsNotEmpty()) {
-            storageReference.child(currentPath())
+    fun backToCurrent(bucket: String? = "", onSuccess: (ListResult) -> Unit) {
+        val storage =
+            if (bucket?.isEmpty()!!) storageReference.listAll() else storageReference.child(bucket)
                 .listAll()
-                .addOnSuccessListener(onSuccess)
-        }
-    }
 
-    fun find(query: String, onSuccess: (MutableList<BookModel>) -> Unit) {
-        val lists = mutableListOf<String>()
-        if (query.isNotEmpty()) {
-            storageReference.listAll()
-                .addOnCompleteListener { task ->
-                    val result = task.result!!
-
-                    if (result.prefixes.isNotEmpty()) {
-                        find(query, onSuccess)
-                        return@addOnCompleteListener
-                    }
-
-                    result.items.forEach { storage ->
-                        lists.add(storage.name)
-                    }
-                }
-            Log.d("TAG", "find: $lists")
+        if (pathsIsNotEmpty()) {
+            if (bucket.isEmpty()) {
+                storageReference.child(currentPath())
+                    .listAll()
+                    .addOnSuccessListener(onSuccess)
+            } else {
+                storageReference.child(bucket).child(currentPath())
+                    .listAll()
+                    .addOnSuccessListener(onSuccess)
+            }
+        } else {
+            storage.addOnSuccessListener(onSuccess)
         }
     }
 

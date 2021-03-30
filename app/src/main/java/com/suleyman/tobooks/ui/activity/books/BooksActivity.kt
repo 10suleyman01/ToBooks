@@ -13,12 +13,13 @@ import androidx.fragment.app.FragmentManager
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.suleyman.tobooks.R
-import com.suleyman.tobooks.utils.Common
-import com.suleyman.tobooks.utils.IBackPressed
 import com.suleyman.tobooks.databinding.ActivityContainerBinding
 import com.suleyman.tobooks.databinding.HeaderLayoutBinding
+import com.suleyman.tobooks.ui.fragment.audios.AudioBooksFragment
 import com.suleyman.tobooks.ui.fragment.books.BooksFragment
+import com.suleyman.tobooks.utils.Common
 import com.suleyman.tobooks.utils.FragmentTag
+import com.suleyman.tobooks.utils.IBackPressed
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -70,9 +71,20 @@ class BooksActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         if (binding.drawerLayout.isDrawerOpen(Gravity.START)) {
             binding.drawerLayout.closeDrawer(Gravity.START)
         }
-        when(item.itemId) {
+        when (item.itemId) {
             R.id.books -> {
+                if (fragmentManager.backStackEntryCount > 0) {
+                    fragmentManager.popBackStack()
+                }
+
                 addFragment(BooksFragment(), FragmentTag.BOOKS.value())
+            }
+
+            R.id.audios -> {
+                if (fragmentManager.backStackEntryCount > 0) {
+                    fragmentManager.popBackStack()
+                }
+                addFragment(AudioBooksFragment(), FragmentTag.AUDIOS.value())
             }
 
             R.id.help -> {

@@ -2,10 +2,13 @@ package com.suleyman.tobooks.ui.activity.upload
 
 import abhishekti7.unicorn.filepicker.utils.Constants
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
 import android.util.Log
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toBitmap
@@ -44,6 +47,14 @@ class UploadFileActivity : AppCompatActivity(), EasyPermissions.PermissionCallba
     private var uploadFile: File? = null
     private var isSelectedImage = false
 
+    private val getImageContent: ActivityResultLauncher<String> =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { imageUri: Uri? ->
+            Glide.with(this)
+                .load(imageUri)
+                .fitCenter()
+                .into(binding.imgBook)
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _binding = ActivityUploadBinding.inflate(layoutInflater)
@@ -79,6 +90,7 @@ class UploadFileActivity : AppCompatActivity(), EasyPermissions.PermissionCallba
 
                     uploadFile?.let { file ->
                         uploadFileViewModel.uploadFile(
+                            "",
                             category = category,
                             file = file,
                             data,
@@ -129,15 +141,16 @@ class UploadFileActivity : AppCompatActivity(), EasyPermissions.PermissionCallba
 
     private fun selectImageFromDevice() {
         if (EasyPermissions.hasPermissions(this, *BooksFragment.PERMISSIONS)) {
-            val intent = Intent(Intent.ACTION_PICK)
-            intent.type = "image/*"
-            startActivityForResult(intent, REQUEST_GET_IMAGE)
+            getImageContent.launch("image/*")
+//            val intent = Intent(Intent.ACTION_PICK)
+//            intent.type = "image/*"
+//            startActivityForResult(intent, REQUEST_GET_IMAGE)
         } else {
             requestPermissions("Дайте приложению доступ к памяти, чтобы загружать картинки")
         }
     }
 
-    private fun requestPermissions(rationale: String) {
+    fun requestPermissions(rationale: String) {
         EasyPermissions.requestPermissions(
             this,
             rationale,

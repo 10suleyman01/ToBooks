@@ -6,16 +6,14 @@ import android.app.AlertDialog
 import android.app.DownloadManager
 import android.content.Context
 import android.os.Environment
-import android.util.Log
 import android.view.View
 import android.view.animation.OvershootInterpolator
 import androidx.core.view.ViewCompat
 import com.google.firebase.storage.ListResult
+import com.google.firebase.storage.StorageReference
 import com.suleyman.tobooks.R
 import com.suleyman.tobooks.model.BookModel
-import com.google.firebase.storage.StorageReference
 import com.suleyman.tobooks.ui.activity.upload.UploadFileActivity
-import java.io.File
 
 
 object Common {
@@ -24,6 +22,7 @@ object Common {
     private const val TAG = "Common"
     const val extConfig: String = ".fconfig"
     const val filePaths: String = "filePaths"
+    const val AUDIOS_BUCKET = "audios"
 
     val GENRES = arrayListOf(
         "Бизнес",
@@ -120,7 +119,9 @@ object Common {
                             path = folder.path,
                             type = BookModel.Type.CATEGORY
                         )
-                        books.add(data)
+                        if (folder.name != "audios") {
+                            books.add(data)
+                        }
                     }
                 }
                 BookModel.Type.BOOK -> {
@@ -142,24 +143,32 @@ object Common {
     }
 
     fun loadDataFromCategory(
+        bucket: String? = null,
         books: MutableList<BookModel>,
         storageReference: StorageReference,
         category: String,
         onCompleted: (MutableList<BookModel>) -> Unit?
     ) {
-        storageReference.child(category)
-            .listAll()
+
+        val storage = bucket?.let {
+            if (it.isEmpty()) storageReference.child(category)
+            else storageReference.child(bucket).child(category)
+        }
+
+        storageReference.child(category).listAll()
             .addOnCompleteListener {
                 if (it.isSuccessful) {
                     it.result?.prefixes?.forEach { folder ->
-                        books.add(
-                            BookModel(
-                                title = folder.name,
-                                path = folder.path,
-                                childList = folder.listAll(),
-                                type = BookModel.Type.CATEGORY
+                        if (folder.name != "audios") {
+                            books.add(
+                                BookModel(
+                                    title = folder.name,
+                                    path = folder.path,
+                                    childList = folder.listAll(),
+                                    type = BookModel.Type.CATEGORY
+                                )
                             )
-                        )
+                        }
                     }
                     it.result?.items?.forEach { file ->
                         if (!file.name.endsWith(extConfig)) {

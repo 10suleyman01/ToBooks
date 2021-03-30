@@ -25,6 +25,7 @@ class BookCreateDirectoryViewModel @Inject constructor(
     var bookUiState: StateFlow<CreateDirectoryState> = _booksUiState
 
     fun createNewDirectory(
+        bucket: String? = "",
         name: String,
         currentDirectory: String,
         storageReference: StorageReference
@@ -32,8 +33,7 @@ class BookCreateDirectoryViewModel @Inject constructor(
         if (name.isNotEmpty()) {
             val file =
                 File("${Environment.getExternalStorageDirectory().absolutePath}/manifest${Common.extConfig}")
-            val isCreated = file.createNewFile()
-            if (isCreated) {
+            if (file.createNewFile()) {
                 if (networkHelper.isNetworkConnected()) {
                     storageReference.child(currentDirectory).child(name).child(file.name)
                         .putFile(file.toUri())

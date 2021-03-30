@@ -46,7 +46,6 @@ object FirebaseModule {
     ) = firebaseDatabase.reference
 
     @Provides
-    @Singleton
     fun provideStorageWalker(
         storageReference: StorageReference,
         utils: Utils

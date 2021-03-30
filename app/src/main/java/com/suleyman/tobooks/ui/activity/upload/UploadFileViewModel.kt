@@ -13,7 +13,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.io.File
-import java.util.HashMap
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -29,24 +29,30 @@ class UploadFileViewModel @Inject constructor(
     val uploadState: StateFlow<UploadState> = _uploadState
 
     fun uploadFile(
+        bucket: String? = "",
         category: String,
         file: File,
         data: HashMap<String, String>,
     ) {
+        val storage = bucket?.let {
+            if (it.isEmpty()) storageReference
+            else storageReference.child(bucket)
+        }
+
         if (networkHelper.isNetworkConnected()) {
-            storageReference.child(category).child(data["name"] ?: "")
-                .putFile(file.toUri())
-                .addOnProgressListener { uploadingTask ->
+            storage?.child(category)?.child(data["name"] ?: "")
+                ?.putFile(file.toUri())
+                ?.addOnProgressListener { uploadingTask ->
                     val progress =
                         (100 * uploadingTask.bytesTransferred) / uploadingTask.totalByteCount
 //                    _uploadState.value = UploadState.Progress(progress.toInt())
                     _uploadState.value = UploadState.Loading
                 }
-                .addOnFailureListener {
+                ?.addOnFailureListener {
                     _uploadState.value =
                         UploadState.Error(utils.getString(R.string.error_uploading))
                 }
-                .addOnCompleteListener { task ->
+                ?.addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         firestore.collection(FirestoreConfig.COLLECTION)
                             .document(data[FirestoreConfig.NAME] ?: "")

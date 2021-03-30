@@ -15,31 +15,37 @@ import javax.inject.Inject
 class BookLoadDirectoriesViewModel @Inject constructor(
     val utils: Utils,
     val networkHelper: NetworkHelper
-): ViewModel() {
+) : ViewModel() {
 
     private val _booksUiState = MutableStateFlow<LoadDirectoriesState>(LoadDirectoriesState.Empty)
     var bookUiState: StateFlow<LoadDirectoriesState> = _booksUiState
 
-    fun loadRootStorage(storageReference: StorageReference) {
-        _booksUiState.value = LoadDirectoriesState.Loading
+    fun loadStorage(bucket: String? = "", storageReference: StorageReference) {
+        _booksUiState.value = LoadDirectoriesState.Loading(true)
         if (networkHelper.isNetworkConnected()) {
-            storageReference.listAll()
-                .addOnSuccessListener { result ->
-                    _booksUiState.value = LoadDirectoriesState.Success(result)
-                }
-                .addOnFailureListener {
-                    _booksUiState.value = LoadDirectoriesState.Error(it.message!!)
-                }
+            val storage = bucket?.let {
+                if (it.isEmpty()) storageReference
+                else storageReference.child(bucket)
+            }
+
+            storage?.listAll()?.addOnSuccessListener { result ->
+                _booksUiState.value = LoadDirectoriesState.Loading(false)
+                _booksUiState.value = LoadDirectoriesState.Success(result)
+            }?.addOnFailureListener {
+                _booksUiState.value = LoadDirectoriesState.Loading(false)
+                _booksUiState.value = LoadDirectoriesState.Error(it.message!!)
+            }
         } else {
-            _booksUiState.value = LoadDirectoriesState.Error(utils.getString(R.string.not_connected))
+            _booksUiState.value =
+                LoadDirectoriesState.Error(utils.getString(R.string.not_connected))
         }
     }
 
     sealed class LoadDirectoriesState {
-        data class Success(val result: ListResult): LoadDirectoriesState()
-        data class Error(val message: String): LoadDirectoriesState()
-        object Loading: LoadDirectoriesState()
-        object Empty: LoadDirectoriesState()
+        data class Success(val result: ListResult) : LoadDirectoriesState()
+        data class Error(val message: String) : LoadDirectoriesState()
+        data class Loading(val isLoading: Boolean) : LoadDirectoriesState()
+        object Empty : LoadDirectoriesState()
     }
 
 }
