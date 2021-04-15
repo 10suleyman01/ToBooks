@@ -13,7 +13,7 @@ import com.google.firebase.storage.ListResult
 import com.google.firebase.storage.StorageReference
 import com.suleyman.tobooks.R
 import com.suleyman.tobooks.model.BookModel
-import com.suleyman.tobooks.ui.activity.upload.UploadFileActivity
+import com.suleyman.tobooks.ui.activity.upload.book.UploadBookActivity
 
 
 object Common {
@@ -71,7 +71,7 @@ object Common {
             .setView(view)
     }
 
-    fun startFilePickerActivity(activity: UploadFileActivity) {
+    fun startFilePickerActivity(activity: UploadBookActivity) {
         UnicornFilePicker.from(activity)
             .addConfigBuilder()
             .selectMultipleFiles(false)

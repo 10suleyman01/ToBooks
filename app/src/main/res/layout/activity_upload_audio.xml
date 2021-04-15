@@ -6,7 +6,7 @@
     android:layout_height="match_parent">
 
     <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/imgBook"
+        android:id="@+id/imgAudio"
         android:layout_width="150dp"
         android:layout_height="200dp"
         android:layout_marginTop="24dp"
@@ -16,7 +16,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/tInLayoutBookAuthor"
+        android:id="@+id/tInLayoutAudioAuthor"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -25,10 +25,10 @@
         android:hint="@string/author_name"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/imgBook">
+        app:layout_constraintTop_toBottomOf="@id/imgAudio">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etBookName"
+            android:id="@+id/etAudioAuthorName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/white" />
@@ -36,7 +36,7 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/tInLayoutBookName"
+        android:id="@+id/tInLayoutAudioName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -45,10 +45,10 @@
         android:hint="@string/book_name"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tInLayoutBookAuthor">
+        app:layout_constraintTop_toBottomOf="@id/tInLayoutAudioAuthor">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etAuthorName"
+            android:id="@+id/etAudioName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/white" />
@@ -61,18 +61,20 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
+        android:clickable="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/ic_baseline_done_24" />
+        app:srcCompat="@drawable/ic_baseline_done_24"
+        tools:ignore="SpeakableTextPresentCheck" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabSelectImageBook"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="@+id/imgBook"
-        app:layout_constraintEnd_toEndOf="@+id/imgBook"
-        app:layout_constraintStart_toEndOf="@+id/imgBook"
-        app:layout_constraintTop_toTopOf="@+id/imgBook"
+        app:layout_constraintBottom_toBottomOf="@+id/imgAudio"
+        app:layout_constraintEnd_toEndOf="@+id/imgAudio"
+        app:layout_constraintStart_toEndOf="@+id/imgAudio"
+        app:layout_constraintTop_toTopOf="@+id/imgAudio"
         app:srcCompat="@drawable/ic_baseline_add_a_photo_24" />
 
     <com.google.android.material.textview.MaterialTextView
@@ -86,7 +88,7 @@
         app:layout_constrainedWidth="true"
         app:layout_constraintBottom_toBottomOf="@+id/btnSelectFile"
         app:layout_constraintEnd_toStartOf="@+id/btnSelectFile"
-        app:layout_constraintStart_toStartOf="@+id/tInLayoutBookName"
+        app:layout_constraintStart_toStartOf="@+id/tInLayoutAudioName"
         app:layout_constraintTop_toTopOf="@+id/btnSelectFile" />
 
     <Button
@@ -95,8 +97,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="@string/select"
-        app:layout_constraintEnd_toEndOf="@+id/tInLayoutBookName"
-        app:layout_constraintTop_toBottomOf="@+id/tInLayoutBookName" />
+        app:layout_constraintEnd_toEndOf="@+id/tInLayoutAudioName"
+        app:layout_constraintTop_toBottomOf="@+id/tInLayoutAudioName" />
 
     <ProgressBar
         android:id="@+id/pbUploadLoading"

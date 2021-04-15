@@ -17,7 +17,7 @@ import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
-class UploadFileViewModel @Inject constructor(
+class UploadBookViewModel @Inject constructor(
     val utils: Utils,
     val networkHelper: NetworkHelper,
     val firestore: FirebaseFirestore,

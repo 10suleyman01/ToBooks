@@ -1,5 +1,6 @@
 package com.suleyman.tobooks.ui.fragment.audios
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.widget.SearchView
@@ -15,8 +16,10 @@ import com.suleyman.tobooks.databinding.EnterTheNameSubcategoryBinding
 import com.suleyman.tobooks.databinding.FragmentAudioBooksBinding
 import com.suleyman.tobooks.model.BookModel
 import com.suleyman.tobooks.ui.activity.books.BooksActivity
-import com.suleyman.tobooks.ui.activity.upload.UploadFileViewModel
+import com.suleyman.tobooks.ui.activity.upload.UploadBookViewModel
+import com.suleyman.tobooks.ui.activity.upload.audio.UploadAudioActivity
 import com.suleyman.tobooks.ui.fragment.books.BooksAdapter
+import com.suleyman.tobooks.ui.fragment.books.BooksFragment
 import com.suleyman.tobooks.ui.fragment.books.viewmodel.BookCreateDirectoryViewModel
 import com.suleyman.tobooks.ui.fragment.books.viewmodel.BookLoadDirectoriesViewModel
 import com.suleyman.tobooks.utils.Common
@@ -110,7 +113,7 @@ class AudioBooksFragment : Fragment(), IBackPressed, SearchView.OnQueryTextListe
                     is BookLoadDirectoriesViewModel.LoadDirectoriesState.Loading -> {
                         binding.loadingContent.isVisible = states.isLoading
                     }
-                    else -> UploadFileViewModel.UploadState.Empty
+                    else -> UploadBookViewModel.UploadState.Empty
                 }
             }
 
@@ -121,13 +124,13 @@ class AudioBooksFragment : Fragment(), IBackPressed, SearchView.OnQueryTextListe
 
     private fun handleFabClick() {
         binding.fabAddNewFile.setOnClickListener {
-//            Intent(requireActivity(), UploadFileActivity::class.java)
-//                .apply {
-//                    putExtra(BooksFragment.EXTRA_CATEGORY, storage.currentPath())
-//                }
-//                .also {
-//                    startActivityForResult(it, BooksFragment.REQUEST_UPLOAD_FILE)
-//                }
+            Intent(requireActivity(), UploadAudioActivity::class.java)
+                .apply {
+                    putExtra(BooksFragment.EXTRA_CATEGORY, storage.currentPath())
+                }
+                .also {
+                    startActivityForResult(it, BooksFragment.REQUEST_UPLOAD_FILE)
+                }
         }
 
         binding.fabAddNewCategory.setOnClickListener {
@@ -187,7 +190,7 @@ class AudioBooksFragment : Fragment(), IBackPressed, SearchView.OnQueryTextListe
                             is BookCreateDirectoryViewModel.CreateDirectoryState.Error -> {
                                 utils.toast(createState.message)
                             }
-                            else -> UploadFileViewModel.UploadState.Empty
+                            else -> UploadBookViewModel.UploadState.Empty
                         }
                     }
                 }

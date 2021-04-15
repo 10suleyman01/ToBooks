@@ -19,8 +19,8 @@ import com.suleyman.tobooks.databinding.ActivityBooksBinding
 import com.suleyman.tobooks.databinding.EnterTheNameSubcategoryBinding
 import com.suleyman.tobooks.model.BookModel
 import com.suleyman.tobooks.ui.activity.books.BooksActivity
-import com.suleyman.tobooks.ui.activity.upload.UploadFileActivity
-import com.suleyman.tobooks.ui.activity.upload.UploadFileViewModel
+import com.suleyman.tobooks.ui.activity.upload.UploadBookViewModel
+import com.suleyman.tobooks.ui.activity.upload.book.UploadBookActivity
 import com.suleyman.tobooks.ui.fragment.books.viewmodel.BookCreateDirectoryViewModel
 import com.suleyman.tobooks.ui.fragment.books.viewmodel.BookLoadDirectoriesViewModel
 import com.suleyman.tobooks.utils.Common
@@ -90,7 +90,7 @@ class BooksFragment : Fragment(), IBackPressed, SearchView.OnQueryTextListener {
 
     private fun handleFabClick() {
         binding.fabAddNewFile.setOnClickListener {
-            Intent(requireActivity(), UploadFileActivity::class.java)
+            Intent(requireActivity(), UploadBookActivity::class.java)
                 .apply {
                     putExtra(EXTRA_CATEGORY, storage.currentPath())
                 }
@@ -166,7 +166,7 @@ class BooksFragment : Fragment(), IBackPressed, SearchView.OnQueryTextListener {
                             is BookCreateDirectoryViewModel.CreateDirectoryState.Error -> {
                                 utils.toast(createState.message)
                             }
-                            else -> UploadFileViewModel.UploadState.Empty
+                            else -> UploadBookViewModel.UploadState.Empty
                         }
                     }
                 }
@@ -190,7 +190,7 @@ class BooksFragment : Fragment(), IBackPressed, SearchView.OnQueryTextListener {
                     is BookLoadDirectoriesViewModel.LoadDirectoriesState.Loading -> {
                         binding.progressBarUploadTask.isVisible = it.isLoading
                     }
-                    else -> UploadFileViewModel.UploadState.Empty
+                    else -> UploadBookViewModel.UploadState.Empty
                 }
             }
         }

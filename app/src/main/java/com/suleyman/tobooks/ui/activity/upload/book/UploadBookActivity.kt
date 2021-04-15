@@ -1,14 +1,11 @@
-package com.suleyman.tobooks.ui.activity.upload
+package com.suleyman.tobooks.ui.activity.upload.book
 
 import abhishekti7.unicorn.filepicker.utils.Constants
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
 import android.util.Log
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toBitmap
@@ -16,6 +13,7 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.suleyman.tobooks.databinding.ActivityUploadBinding
+import com.suleyman.tobooks.ui.activity.upload.UploadBookViewModel
 import com.suleyman.tobooks.ui.fragment.books.BooksFragment
 import com.suleyman.tobooks.utils.Common
 import com.suleyman.tobooks.utils.FirestoreConfig
@@ -28,7 +26,7 @@ import java.io.File
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class UploadFileActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
+class UploadBookActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
 
     companion object {
         const val REQUEST_GET_IMAGE = 2221
@@ -42,18 +40,10 @@ class UploadFileActivity : AppCompatActivity(), EasyPermissions.PermissionCallba
 
     private val TAG = "UploadFileActivity"
 
-    private val uploadFileViewModel: UploadFileViewModel by viewModels()
+    private val uploadBookViewModel: UploadBookViewModel by viewModels()
 
     private var uploadFile: File? = null
     private var isSelectedImage = false
-
-    private val getImageContent: ActivityResultLauncher<String> =
-        registerForActivityResult(ActivityResultContracts.GetContent()) { imageUri: Uri? ->
-            Glide.with(this)
-                .load(imageUri)
-                .fitCenter()
-                .into(binding.imgBook)
-        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,7 +79,7 @@ class UploadFileActivity : AppCompatActivity(), EasyPermissions.PermissionCallba
                 if (bookName.isNotEmpty() && bookAuthor.isNotEmpty() && isSelectedImage) {
 
                     uploadFile?.let { file ->
-                        uploadFileViewModel.uploadFile(
+                        uploadBookViewModel.uploadFile(
                             "",
                             category = category,
                             file = file,
@@ -99,9 +89,9 @@ class UploadFileActivity : AppCompatActivity(), EasyPermissions.PermissionCallba
 
                     lifecycleScope.launchWhenStarted {
 
-                        uploadFileViewModel.uploadState.collect {
+                        uploadBookViewModel.uploadState.collect {
                             when (it) {
-                                is UploadFileViewModel.UploadState.Success -> {
+                                is UploadBookViewModel.UploadState.Success -> {
                                     isSelectedImage = false
                                     pbUploadLoading.isVisible = false
                                     val data = Intent()
@@ -109,17 +99,17 @@ class UploadFileActivity : AppCompatActivity(), EasyPermissions.PermissionCallba
                                     setResult(RESULT_OK, data)
                                     finish()
                                 }
-                                is UploadFileViewModel.UploadState.Progress -> {
+                                is UploadBookViewModel.UploadState.Progress -> {
 
                                 }
-                                is UploadFileViewModel.UploadState.Loading -> {
+                                is UploadBookViewModel.UploadState.Loading -> {
                                     pbUploadLoading.isVisible = true
                                 }
-                                is UploadFileViewModel.UploadState.Error -> {
+                                is UploadBookViewModel.UploadState.Error -> {
                                     pbUploadLoading.isVisible = false
                                     Log.d(TAG, "onCreate: ${it.message}")
                                 }
-                                else -> UploadFileViewModel.UploadState.Empty
+                                else -> UploadBookViewModel.UploadState.Empty
                             }
                         }
 
@@ -141,10 +131,9 @@ class UploadFileActivity : AppCompatActivity(), EasyPermissions.PermissionCallba
 
     private fun selectImageFromDevice() {
         if (EasyPermissions.hasPermissions(this, *BooksFragment.PERMISSIONS)) {
-            getImageContent.launch("image/*")
-//            val intent = Intent(Intent.ACTION_PICK)
-//            intent.type = "image/*"
-//            startActivityForResult(intent, REQUEST_GET_IMAGE)
+            val intent = Intent(Intent.ACTION_PICK)
+            intent.type = "image/*"
+            startActivityForResult(intent, REQUEST_GET_IMAGE)
         } else {
             requestPermissions("Дайте приложению доступ к памяти, чтобы загружать картинки")
         }

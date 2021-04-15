@@ -51,12 +51,13 @@ class StorageWalker @Inject constructor(
     }
 
     fun backToCurrent(bucket: String? = "", onSuccess: (ListResult) -> Unit) {
-        val storage =
-            if (bucket?.isEmpty()!!) storageReference.listAll() else storageReference.child(bucket)
-                .listAll()
+        val storage = bucket?.let {
+            if (it.isEmpty()) storageReference.listAll()
+            else storageReference.child(bucket).listAll()
+        }
 
         if (pathsIsNotEmpty()) {
-            if (bucket.isEmpty()) {
+            if (bucket?.isEmpty()!!) {
                 storageReference.child(currentPath())
                     .listAll()
                     .addOnSuccessListener(onSuccess)
@@ -66,7 +67,7 @@ class StorageWalker @Inject constructor(
                     .addOnSuccessListener(onSuccess)
             }
         } else {
-            storage.addOnSuccessListener(onSuccess)
+            storage?.addOnSuccessListener(onSuccess)
         }
     }
 
